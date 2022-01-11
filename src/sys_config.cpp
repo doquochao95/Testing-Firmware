@@ -44,13 +44,22 @@ void io_init()
   pinMode(AirFlowPicker, OUTPUT);
   pinMode(AirSuckPicker, OUTPUT);
 }
-
 void local_data_init()
 {
   Serial.println("Initialing local system");
   machine_progress.init();
 }
+void ethernet_init()
+{
+  Serial.println("Initializing ethernet module");
+  nex_send_message("Setting up ethernet module...");
+  knife_capture.ethernet_handle.init(ETHERNET_CS_PIN, ETHERNET_RST_PIN, ethernet_data_received_callback);
+  //initialize ethernet module
+  int exception = knife_capture.ethernet_handle.setting_up_ethernet_module();
 
+  printf("Initialize ethernet module exception code: %d\r\n", exception);
+  nex_send_message("Setting up done");
+}
 void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t eventType)
 {
   // function_log();
