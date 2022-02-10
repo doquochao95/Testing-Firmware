@@ -140,8 +140,8 @@ public:
         Serial.println("Building Name: " + String(building_name));
         Serial.println("Device ID: " + String(device_id));
         Serial.println("Device Name: " + String(device_name));
-        Serial.println(frame_led_flag ? "Before Get frame_led_flag: true" : "Before Get frame_led_flag: false");
-        Serial.println(table_led_flag ? "Before Get table_led_flag: true" : "Before Get table_led_flag: false");
+        Serial.println(frame_led_flag ? "Get frame_led_flag: true" : "Get frame_led_flag: false");
+        Serial.println(table_led_flag ? "Get table_led_flag: true" : "Get table_led_flag: false");
     }
 
     void eeprom_save_building_name()
@@ -177,23 +177,17 @@ public:
         function_log();
         memccpy(building_name, BuildingName, 0, sizeof(building_name));
         Serial.println("New Building Name: " + String(building_name));
-        Serial.println("Device ID: " + String(device_id));
-        Serial.println("Device Name: " + String(device_name));
     }
     void setup_device_id(int DeviceID)
     {
         function_log();
         device_id = DeviceID;
-        Serial.println("Building Name: " + String(building_name));
         Serial.println("New Device ID: " + String(device_id));
-        Serial.println("Device Name: " + String(device_name));
     }
     void setup_device_name(char *DeviceName)
     {
         function_log();
         memccpy(device_name, DeviceName, 0, sizeof(device_name));
-        Serial.println("Building Name: " + String(building_name));
-        Serial.println("Device ID: " + String(device_id));
         Serial.println("New Device Name: " + String(device_name));
     }
     void setup_table_led_flag_status(bool value)

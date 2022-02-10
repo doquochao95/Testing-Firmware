@@ -16,7 +16,7 @@ void nextion_extension::sendCommand(const char *commandStr)
   NextionSerial.write(0xFF);
   NextionSerial.write(0xFF);
   NextionSerial.write(0xFF);
-  Serial.println("nextion cmd:" + String(commandStr));
+  // Serial.println("Nextion cmd:" + String(commandStr));
 }
 void nextion_extension::nex_set_vis(const char *propertyName, uint32_t value)
 {
@@ -107,18 +107,15 @@ size_t nextion_extension::getStringProperty(const char *propertyName,const char 
 
 void nextion_extension::nex_send_message(const char *message)
 {
-  
   setStringProperty("HOME", "msg.txt", message);
-  setStringProperty("PAGE1", "msg.txt", message);
+  setStringProperty("WAIT", "msg.txt", message);
   setStringProperty("AXIS", "msg.txt", message);
   setStringProperty("CONNECTION", "msg.txt", message);
-  setStringProperty("ADJUSTMENT", "msg.txt", message);
 }
 
 void nextion_extension::nex_init()
 {
   NextionSerial.begin(115200);
-  Serial.println("Initialize nextion screen");
-  nex_goto_page("page1");
+  Serial.println("Initializing nextion screen");
 }
 

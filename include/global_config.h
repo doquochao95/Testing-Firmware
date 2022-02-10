@@ -40,9 +40,6 @@
 #define NEX_BUT_RESET_Z 0x26
 #define NEX_BUT_RESET_W 0x27
 
-#define MFRC522_SS_PIN 53
-#define MFRC522_RST_PIN 22
-
 #define NEX_AXIS_PAGE_INIT 0xD0
 #define NEX_AXIS_PAGE_EXIT 0xD1
 
@@ -73,22 +70,17 @@
 #define NEX_KEYBOARD3_PAGE_EXIT 0xE2
 
 
-#define ALARM_PIN 23 //Buzzer pin 23
-
 #define XdirPin 2
 #define XstepPin 3
 
-#define YdirPin 4
-#define YstepPin 5
+#define YdirPin 10
+#define YstepPin 11
 
 #define ZdirPin 6
 #define ZstepPin 7
 
 #define WdirPin 8
 #define WstepPin 9
-
-#define ETHERNET_CS_PIN 10
-#define ETHERNET_RST_PIN 11
 
 #define motorInterfaceType 1
 
@@ -115,9 +107,9 @@
 #define TableLED 45
 #define DropCylinder 46
 #define CameraCylinder 47
-#define AirFlowPicker 48
-#define AirSuckPicker 49
 
+#define AirFlowPicker 22
+#define AirSuckPicker 23
  
 
 #endif

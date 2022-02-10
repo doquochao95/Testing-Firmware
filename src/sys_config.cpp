@@ -5,16 +5,27 @@ nextion_extension nextion;
 void start_up()
 {
   io_init();
+  delay(500);
   nextion.nex_init();
+  delay(500);
   PAGE_LOADING_EVENT.root_attachCallback(PAGE_LOADING_EVENT_CALLBACK);
+  delay(500);
   local_data_init();
-  motor_set_speed_init();
-  motor_set_acc_init();
+  delay(500);
+  ethernet_init();
+  delay(500);
   setup_machine_hardware();
+  delay(500);
+  homing_machine();
+  delay(500);
+  motor_set_speed_init();
+  delay(500);
+  motor_set_acc_init();
+  nextion.nex_goto_page("HOME");
 }
 void io_init()
 {
-  Serial.begin(115200); //debug baudrate
+  Serial.begin(115200); // debug baudrate
   while (!Serial)
     ;
   Serial.println("Initializes system IO");
@@ -43,33 +54,33 @@ void io_init()
   pinMode(CameraCylinder, OUTPUT);
   pinMode(AirFlowPicker, OUTPUT);
   pinMode(AirSuckPicker, OUTPUT);
+
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH);
+  air_checking();
 }
 void local_data_init()
 {
-  Serial.println("Initialing local system");
+  Serial.println("Initialing local parameters");
   machine_progress.init();
 }
 void ethernet_init()
 {
   Serial.println("Initializing ethernet module");
-  nex_send_message("Setting up ethernet module...");
-  knife_capture.ethernet_handle.init(ETHERNET_CS_PIN, ETHERNET_RST_PIN, ethernet_data_received_callback);
-  //initialize ethernet module
-  int exception = knife_capture.ethernet_handle.setting_up_ethernet_module();
-
-  printf("Initialize ethernet module exception code: %d\r\n", exception);
-  nex_send_message("Setting up done");
+  nextion.nex_send_message("Setting up ethernet module...");
+  // initialize ethernet module
+  machine_progress.machine_connection_page.setting_up_ethernet_module();
 }
 void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t eventType)
 {
   // function_log();
-  //Serial.println("Nextion event callback: Page:" + String(pageId) + "ComponentId:" + String(componentId));
+  // Serial.println("Nextion event callback: Page:" + String(pageId) + "ComponentId:" + String(componentId));
   switch (pageId)
   {
-  case 7: //page AXIS
+  case 7: // page AXIS
     if (componentId == NEX_AXIS_PAGE_INIT)
     {
-      //update movemnt page
+      // update movemnt page
       machine_progress.nx_update_axis_page();
     }
     if (componentId == NEX_AXIS_PAGE_EXIT)
@@ -169,7 +180,9 @@ void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t ev
     }
     if (componentId == NEX_BUT_RESET_ALL_AXIS)
     {
-      motor_reset_stepper_current_position();
+      homing_machine();
+      motor_set_acc_init();
+      motor_set_speed_init();
       motor_reset_nx_position();
       machine_progress.nx_axis_page_init();
     }
@@ -189,7 +202,7 @@ void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t ev
     }
     break;
 
-  case 8: //page CONNECTION
+  case 8: // page CONNECTION
     if (componentId == NEX_CONNECTION_PAGE_INIT)
     {
       machine_progress.nx_update_connection_page();
@@ -208,7 +221,7 @@ void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t ev
     }
     break;
 
-  case 9: //page ABOUT
+  case 9: // page ABOUT
     if (componentId == NEX_ABOUT_PAGE_INIT)
     {
       machine_progress.nx_update_about_page();
@@ -279,4 +292,36 @@ void setup_machine_hardware()
   {
     digitalWrite(MachineLED, LOW);
   }
+}
+void ethernet_checking()
+{
+  machine_progress.machine_connection_page.check_ethernet_module_status();
+}
+void sensors_checking()
+{
+  if (digitalRead(OvertravelW1) == HIGH || digitalRead(OvertravelW2) == HIGH)
+  {
+    nextion.nex_set_vis("b31", 1);
+  }
+  else
+  {
+    nextion.nex_set_vis("b31", 0);
+  }
+}
+void air_checking()
+{
+  digitalWrite(AirSuckPicker, HIGH);
+  while (digitalRead(AirSuplied))
+  {
+    Serial.println("Please supply airpressure");
+    delay(100);
+  }
+  Serial.println("Airpressure success");
+  digitalWrite(AirSuckPicker, LOW);
+}
+
+void udp_listening()
+{
+  machine_progress.machine_connection_page.udp_checking();
+  machine_progress.udp_buffer_progress();
 }

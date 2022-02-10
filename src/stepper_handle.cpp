@@ -29,16 +29,16 @@ void motor_set_speed_init()
   int speedw = machine.machine_axis_page.eeprom_get_speed_parameter('w');
 
   stepperX.setMaxSpeed(speedx * 30); // ?Steps/s
-  Serial.println(" Speed X: " + String(speedx));
+  Serial.println("Speed X: " + String(speedx));
 
   stepperY.setMaxSpeed(speedy * 30); // ?Steps/s
-  Serial.println(" Speed Y: " + String(speedy));
+  Serial.println("Speed Y: " + String(speedy));
 
   stepperZ.setMaxSpeed(speedz * 10); // ?Steps/s
-  Serial.println(" Speed Z: " + String(speedz));
+  Serial.println("Speed Z: " + String(speedz));
 
   stepperW.setMaxSpeed(speedw * 10); // ?Steps/s
-  Serial.println(" Speed W: " + String(speedw));
+  Serial.println("Speed W: " + String(speedw));
 }
 void motor_set_acc_init()
 {
@@ -49,16 +49,16 @@ void motor_set_acc_init()
   int accw = machine.machine_axis_page.eeprom_get_acc_parameter('w');
 
   stepperX.setAcceleration(accx * 30); // ?Step/s2
-  Serial.println(" Acceleration X: " + String(accx));
+  Serial.println("Acceleration X: " + String(accx));
 
   stepperY.setAcceleration(accy * 30); // ?Step/s2
-  Serial.println(" Acceleration Y: " + String(accy));
+  Serial.println("Acceleration Y: " + String(accy));
 
   stepperZ.setAcceleration(accz * 10); // ?Step/s2
-  Serial.println(" Acceleration Z: " + String(accz));
+  Serial.println("Acceleration Z: " + String(accz));
 
   stepperW.setAcceleration(accw * 10); // ?Step/s2
-  Serial.println(" Acceleration W: " + String(accw));
+  Serial.println("Acceleration W: " + String(accw));
 }
 
 void motor_forward(char axis, int value)
@@ -636,8 +636,18 @@ void motor_back(char axis, int value)
 void motor_W_open()
 {
   function_log();
-  stepperW.moveTo(stepperW.currentPosition() - machine.wresolution * 11);
-  stepperW.runToPosition();
+  stepperW.moveTo(stepperW.currentPosition() - machine.wresolution * 100);
+  nextions.nex_set_vis("b31", 0);
+  while (1)
+  {
+    if (digitalRead(OvertravelW1) == HIGH)
+    {
+      stepperW.stop();
+      stepperW.setCurrentPosition(0);
+      break;
+    }
+    stepperW.run();
+  }
   machine.machine_axis_page.set_w_status(true);
   machine.machine_axis_page.eeprom_put_w_status();
   machine.nx_set_w_needle_table_button_status();
@@ -645,8 +655,18 @@ void motor_W_open()
 void motor_W_close()
 {
   function_log();
-  stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * 11);
-  stepperW.runToPosition();
+  stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * 100);
+  nextions.nex_set_vis("b31", 0);
+  while (1)
+  {
+    if (digitalRead(OvertravelW2) == HIGH)
+    {
+      stepperW.stop();
+      stepperW.setCurrentPosition(0);
+      break;
+    }
+    stepperW.run();
+  }
   machine.machine_axis_page.set_w_status(false);
   machine.machine_axis_page.eeprom_put_w_status();
   machine.nx_set_w_needle_table_button_status();
@@ -667,50 +687,31 @@ int get_current_position(char axis)
     return stepperZ.currentPosition();
   }
 }
-void motor_reset_stepper_current_position()
-{
-  stepperX.setCurrentPosition(0);
-  stepperY.setCurrentPosition(0);
-  stepperZ.setCurrentPosition(0);
-}
 void nx_axis_page_exit_event()
 {
   function_log();
-  // EEPROM.begin();
   if (press_flagX == true)
   {
-    //machine.machine_axis_page.set_xposition(get_current_position('x')/machine.xresolution;
     Serial.println("Funtion: " + String(__func__) + "machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
     machine.machine_axis_page.eeprom_write_position_parameter('x', machine.machine_axis_page.xposition);
     machine.machine_axis_page.eeprom_write_position_parameter('y', machine.machine_axis_page.yposition);
     machine.machine_axis_page.eeprom_write_position_parameter('z', machine.machine_axis_page.zposition);
-    // eeprom_write<int>(machine.machine_axis_page.xposition, X_POSITION_EEPROM_ADD);
-    // eeprom_write<int>(machine.machine_axis_page.yposition, Y_POSITION_EEPROM_ADDR);
-    // eeprom_write<int>(machine.machine_axis_page.zposition, Z_POSITION_EEPROM_ADDRE);
     press_flagX = false;
   }
   if (press_flagY == true)
   {
-    //machine.machine_axis_page.set_yposition(get_current_position('y')/machine.yresolution;
     Serial.println("Funtion: " + String(__func__) + "machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
     machine.machine_axis_page.eeprom_write_position_parameter('x', machine.machine_axis_page.xposition);
     machine.machine_axis_page.eeprom_write_position_parameter('y', machine.machine_axis_page.yposition);
     machine.machine_axis_page.eeprom_write_position_parameter('z', machine.machine_axis_page.zposition);
-    // eeprom_write<int>(machine.machine_axis_page.xposition, X_POSITION_EEPROM_ADD);
-    // eeprom_write<int>(machine.machine_axis_page.yposition, Y_POSITION_EEPROM_ADDR);
-    // eeprom_write<int>(machine.machine_axis_page.zposition, Z_POSITION_EEPROM_ADDRE);
     press_flagY = false;
   }
   if (press_flagZ == true)
   {
-    //machine.machine_axis_page.set_zposition(get_current_position('z')/machine.zresolution;
     Serial.println("Funtion: " + String(__func__) + "machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
     machine.machine_axis_page.eeprom_write_position_parameter('x', machine.machine_axis_page.xposition);
     machine.machine_axis_page.eeprom_write_position_parameter('y', machine.machine_axis_page.yposition);
     machine.machine_axis_page.eeprom_write_position_parameter('z', machine.machine_axis_page.zposition);
-    // eeprom_write<int>(machine.machine_axis_page.xposition, X_POSITION_EEPROM_ADD);
-    // eeprom_write<int>(machine.machine_axis_page.yposition, Y_POSITION_EEPROM_ADDR);
-    // eeprom_write<int>(machine.machine_axis_page.zposition, Z_POSITION_EEPROM_ADDRE);
     press_flagZ = false;
   }
   else
@@ -721,7 +722,6 @@ void nx_axis_page_exit_event()
     press_flagY = false;
     press_flagZ = false;
   }
-  // EEPROM.end();
   machine.init_flag = false;
   machine.machine_axis_page.reset();
   add_x = 0;
@@ -739,7 +739,136 @@ void motor_reset_nx_position()
   machine.machine_axis_page.eeprom_write_position_parameter('x', machine.machine_axis_page.xposition);
   machine.machine_axis_page.eeprom_write_position_parameter('y', machine.machine_axis_page.yposition);
   machine.machine_axis_page.eeprom_write_position_parameter('z', machine.machine_axis_page.zposition);
-  // eeprom_write<int>(machine.machine_axis_page.xposition, X_POSITION_EEPROM_ADD);
-  // eeprom_write<int>(machine.machine_axis_page.yposition, Y_POSITION_EEPROM_ADDR);
-  // eeprom_write<int>(machine.machine_axis_page.zposition, Z_POSITION_EEPROM_ADDRE);
+}
+
+void homing_x_axis()
+{
+  long initial_homing = -1;
+  stepperX.setMaxSpeed(1000);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperX.setAcceleration(1000); // Set Acceleration of Stepper
+
+  // Start Homing procedure of Stepper Motor at startup
+
+  Serial.print("Stepper X is Homing . . . . . . . . . . . ");
+
+  while (!digitalRead(HomeX))
+  {                                  // Make the Stepper move CCW until the switch is activated
+    stepperX.moveTo(initial_homing); // Set the position to move to
+    initial_homing--;                // Decrease by 1 for next move if needed
+    stepperX.run();                  // Start moving the stepper
+    delay(1);
+  }
+
+  stepperX.setCurrentPosition(0);  // Set the current position as zero for now
+  stepperX.setMaxSpeed(100);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperX.setAcceleration(100); // Set Acceleration of Stepper
+  initial_homing = 1;
+
+  while (digitalRead(HomeX))
+  { // Make the Stepper move CW until the switch is deactivated
+    stepperX.moveTo(initial_homing);
+    stepperX.run();
+    initial_homing++;
+    delay(1);
+  }
+
+  stepperX.setCurrentPosition(0);
+  Serial.println("Homing X Completed");
+}
+void homing_y_axis()
+{
+  long initial_homing = -1;
+  stepperY.setMaxSpeed(1000);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperY.setAcceleration(1000); // Set Acceleration of Stepper
+
+  // Start Homing procedure of Stepper Motor at startup
+
+  Serial.print("Stepper Y is Homing . . . . . . . . . . . ");
+
+  while (!digitalRead(HomeY))
+  {                                  // Make the Stepper move CCW until the switch is activated
+    stepperY.moveTo(initial_homing); // Set the position to move to
+    initial_homing--;                // Decrease by 1 for next move if needed
+    stepperY.run();                  // Start moving the stepper
+    delay(1);
+  }
+
+  stepperY.setCurrentPosition(0);  // Set the current position as zero for now
+  stepperY.setMaxSpeed(100);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperY.setAcceleration(100); // Set Acceleration of Stepper
+  initial_homing = 1;
+
+  while (digitalRead(HomeY))
+  { // Make the Stepper move CW until the switch is deactivated
+    stepperY.moveTo(initial_homing);
+    stepperY.run();
+    initial_homing++;
+    delay(1);
+  }
+
+  stepperY.setCurrentPosition(0);
+  Serial.println("Homing Y Completed");
+}
+void homing_z_axis()
+{
+  long initial_homing = 1;
+  stepperZ.setMaxSpeed(1000);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperZ.setAcceleration(1000); // Set Acceleration of Stepper
+
+  // Start Homing procedure of Stepper Motor at startup
+
+  Serial.print("Stepper Z is Homing . . . . . . . . . . . ");
+
+  while (!digitalRead(HomeZ))
+  {                                  // Make the Stepper move CCW until the switch is activated
+    stepperZ.moveTo(initial_homing); // Set the position to move to
+    initial_homing++;                // Decrease by 1 for next move if needed
+    stepperZ.run();                  // Start moving the stepper
+    delay(1);
+  }
+
+  stepperZ.setCurrentPosition(0);  // Set the current position as zero for now
+  stepperZ.setMaxSpeed(100);     // Set Max Speed of Stepper (Slower to get better accuracy)
+  stepperZ.setAcceleration(100); // Set Acceleration of Stepper
+  initial_homing = -1;
+
+  while (digitalRead(HomeZ))
+  { // Make the Stepper move CW until the switch is deactivated
+    stepperZ.moveTo(initial_homing);
+    stepperZ.run();
+    initial_homing--;
+    delay(1);
+  }
+
+  stepperZ.setCurrentPosition(0);
+  Serial.println("Homing Z Completed");
+}
+void homing_w_axis()
+{
+  stepperW.setMaxSpeed(5000);    
+  stepperW.setAcceleration(5000);
+  stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * 100);
+  Serial.print("Stepper W is Homing . . . . . . . . . . . ");
+  while (1)
+  {
+    if (digitalRead(OvertravelW2) == HIGH)
+    {
+      stepperW.stop();
+      stepperW.setCurrentPosition(0);
+      break;
+    }
+    stepperW.run();
+  }
+  machine.machine_axis_page.set_w_status(false);
+  machine.machine_axis_page.eeprom_put_w_status();
+  machine.nx_set_w_needle_table_button_status();
+  Serial.println("Homing W Completed");
+}
+
+void homing_machine()
+{
+  homing_w_axis();
+  homing_z_axis();
+  homing_x_axis();
+  homing_y_axis();
 }

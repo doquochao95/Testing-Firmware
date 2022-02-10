@@ -279,7 +279,7 @@ public:
 
     axis_parameters_def(int storage_address)
     {
-        Serial.println("Create axis page parameters");
+        Serial.println("Initializing Axis Page");
         Storage_addr = storage_address;
         axis_storage_address_specific();
     }
@@ -462,17 +462,14 @@ public:
     {
         function_log();
         eeprom_put_w_needle_table_status();
-        Serial.println(w_needle_table_status_flag ? "Put w_needle_table_status_flag: true" : "Put w_needle_table_status_flag: false");
+        Serial.println(w_needle_table_status_flag ? "Put w_flag: true" : "Put w_flag: false");
     }
 
-    bool eeprom_get_w_status()
+    void eeprom_get_w_status()
     {
         function_log();
-        Serial.println(w_needle_table_status_flag ? "Before Get w_needle_table_status_flag: true" : "Before Get w_needle_table_status_flag: false");
         eeprom_get_w_needle_table_status();
-        Serial.println(w_needle_table_status_flag ? "After Get w_needle_table_status_flag: true" : "After Get w_needle_table_status_flag: false");
-        bool status = w_needle_table_status_flag;
-        return status;
+        Serial.println(w_needle_table_status_flag ? "Get w_flag: true" : "Get w_flag: false");
     }
 
     int eeprom_read_position_parameters(char axis)

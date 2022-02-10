@@ -36,4 +36,6 @@ void homing_x_axis ();
 void homing_y_axis ();
 void homing_z_axis ();
 void homing_w_axis ();
+
+void homing_machine ();
 #endif

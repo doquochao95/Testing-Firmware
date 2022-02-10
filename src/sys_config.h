@@ -11,6 +11,13 @@ void io_init();
 // nextion callback fucntions
 void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t eventType);
 void local_data_init();
+void ethernet_init();
 void setup_machine_hardware();
+void ethernet_checking();
+void sensors_checking();
+void air_checking();
+
+void udp_listening();
+
 
 #endif

@@ -2,7 +2,7 @@
 #define machine_progress_handler_h
 
 #include "machine_axis_parameters_handle.h"
-#include "machine_ethernet_parameters_handler.h"
+#include "machine_ethernet_handler.h"
 #include "machine_identity_parameters_handler.h"
 #include <nextion_extension.h>
 
@@ -13,10 +13,10 @@ private:
 
 public:
   axis_parameters_def machine_axis_page = axis_parameters_def(EEPROM_START_PARAMETERS_ADD); // machine_axis_page_def(int storage_address)
-  ethernet_parameters_def machine_connection_page = ethernet_parameters_def(EEPROM_ETHERNET_START_ADD);
+  ethernet_module_def machine_connection_page = ethernet_module_def(EEPROM_ETHERNET_START_ADD);
   identity_parameters_def machine_about_page = identity_parameters_def(EEPROM_IDENTITY_START_ADD);
 
-  int xresolution = 100; //step/cm
+  int xresolution = 100; // step/cm
   int yresolution = 100;
   int zresolution = 50;
   int wresolution = 200;
@@ -26,14 +26,14 @@ public:
   void init()
   {
     machine_axis_page.eeprom_read_axis_parameter();
-    machine_connection_page.eeprom_read_ethernet_parameters();
+    machine_connection_page.ethernet_parameters.eeprom_read_ethernet_parameters();
     machine_about_page.eeprom_read_identity_parameters();
   }
   // AXIS PAGE
   void nx_update_axis_page()
   {
     function_log();
-    Serial.println(key_board_flag ? "Key board: true" : "Key board: false");
+    Serial.println(key_board_flag ? "Keyboard: true" : "Keyboard: false");
     if (key_board_flag == false)
     {
       nx_clear_movement_page();
@@ -118,7 +118,8 @@ public:
   void nx_set_w_needle_table_button_status()
   {
     function_log();
-    bool status = machine_axis_page.eeprom_get_w_status();
+    machine_axis_page.eeprom_get_w_status();
+    bool status = machine_axis_page.w_needle_table_status_flag;
     Serial.println(status ? "W_needle_table_flag: true" : "W_needle_table_flag: false");
     if (status == false)
     {
@@ -145,12 +146,12 @@ public:
     Serial.println(" x_offset: " + String(x_offset) + " y_offset: " + String(y_offset) + " z_offset: " + String(z_offset) + " w_offset: " + String(w_offset));
     if (x_offset < 0 || y_offset < 0 || z_offset < 0 || w_offset < 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_axis_page.axis_page_setup_offset_parameter(x_offset, y_offset, z_offset, w_offset);
     machine_axis_page.eeprom_write_offset_parameters();
-    nextion.nex_send_message("Saved offset successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_axis_page_plus()
   {
@@ -166,12 +167,12 @@ public:
     Serial.println(" x_plus: " + String(x_plus) + " y_plus: " + String(y_plus) + " z_plus: " + String(z_plus) + " w_plus: " + String(w_plus));
     if (x_plus < 0 || y_plus < 0 || z_plus < 0 || w_plus < 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_axis_page.axis_page_setup_plus_parameter(x_plus, y_plus, z_plus, w_plus);
     machine_axis_page.eeprom_write_plus_parameters();
-    nextion.nex_send_message("Saved plus successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_axis_page_speed()
   {
@@ -187,12 +188,12 @@ public:
     Serial.println(" x_speed: " + String(x_speed) + " y_speed: " + String(y_speed) + " z_speed: " + String(z_speed) + " w_speed: " + String(w_speed));
     if (x_speed < 0 || y_speed < 0 || z_speed < 0 || w_speed < 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_axis_page.axis_page_setup_speed_parameter(x_speed, y_speed, z_speed, w_speed);
     machine_axis_page.eeprom_write_speed_parameters();
-    nextion.nex_send_message("Saved speed successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_axis_page_acc()
   {
@@ -208,12 +209,12 @@ public:
     Serial.println(" x_acc: " + String(nextion.getNumberProperty("AXIS", "n15.val")) + " y_acc: " + String(y_acc) + " z_acc: " + String(z_acc) + " w_acc: " + String(w_acc));
     if (x_acc < 0 || y_acc < 0 || z_acc < 0 || w_acc < 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_axis_page.axis_page_setup_acc_parameter(x_acc, y_acc, z_acc, w_acc);
     machine_axis_page.eeprom_write_acceleration_parameters();
-    nextion.nex_send_message("Saved accerleration successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   // CONNECTION PAGE
   void nx_update_connection_page()
@@ -222,14 +223,14 @@ public:
     Serial.println(key_board_flag ? "Key board: true" : "Key board: false");
     if (key_board_flag == false)
     {
-      nextion.setStringProperty("CONNECTION", "t0.txt", machine_connection_page.remote_ip_str);
-      nextion.setStringProperty("CONNECTION", "t1.txt", machine_connection_page.local_ip_str);
-      nextion.setNumberProperty("CONNECTION", "n0.val", machine_connection_page.localPort);
+      nextion.setStringProperty("CONNECTION", "t0.txt", machine_connection_page.ethernet_parameters.remote_ip_str);
+      nextion.setStringProperty("CONNECTION", "t1.txt", machine_connection_page.ethernet_parameters.local_ip_str);
+      nextion.setNumberProperty("CONNECTION", "n0.val", machine_connection_page.ethernet_parameters.localPort);
 
-      char *props[6] = {"n1.val", "n2.val", "n3.val", "n4.val", "n5.val", "n6.val"};
-      for (int i = 0; i < sizeof(machine_connection_page.MAC); i++)
+      const char *props[6] = {"n1.val", "n2.val", "n3.val", "n4.val", "n5.val", "n6.val"};
+      for (uint8_t i = 0; i < sizeof(machine_connection_page.ethernet_parameters.MAC); i++)
       {
-        nextion.setNumberProperty("CONNECTION", props[i], machine_connection_page.MAC[i]);
+        nextion.setNumberProperty("CONNECTION", props[i], machine_connection_page.ethernet_parameters.MAC[i]);
       }
     }
     else
@@ -242,9 +243,9 @@ public:
   {
     function_log();
     char remoteip[20]{0};
-    nextion.nex_send_message("Exeption: Saving...");
+    nextion.nex_send_message("Saving...");
     nextion.getStringProperty("CONNECTION", "t0.txt", remoteip, sizeof(remoteip));
-    char *props[6] = {"n1.val", "n2.val", "n3.val", "n4.val", "n5.val", "n6.val"};
+    const char *props[6] = {"n1.val", "n2.val", "n3.val", "n4.val", "n5.val", "n6.val"};
     uint8_t mac[6]{0};
     for (int i = 0; i < 6; i++)
     {
@@ -252,14 +253,14 @@ public:
       Serial.println("mac[" + String(i) + "]: " + String(mac_element));
       if (mac_element > 255 || mac_element == 0 || mac_element == -1)
       {
-        nextion.nex_send_message("Error: Invalid MAC");
+        nextion.nex_send_message("Invalid MAC");
         return;
       }
       mac[i] = (uint8_t)mac_element;
     }
-    machine_connection_page.setup_machine_mac(mac);
-    machine_connection_page.eeprom_save_MAC();
-    nextion.nex_send_message("Exeption: Saved successfully");
+    machine_connection_page.ethernet_parameters.setup_machine_mac(mac);
+    machine_connection_page.ethernet_parameters.eeprom_save_MAC();
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_ethernet_parameters()
   {
@@ -269,19 +270,19 @@ public:
     char localip[20]{0};
     int localport = 0;
 
-    nextion.nex_send_message("Exeption: Saving...");
+    nextion.nex_send_message("Saving...");
     nextion.getStringProperty("CONNECTION", "t0.txt", remoteip, sizeof(remoteip));
     nextion.getStringProperty("CONNECTION", "t1.txt", localip, sizeof(localip));
     localport = nextion.getNumberProperty("CONNECTION", "n0.val");
     Serial.println("localport: " + String(localport));
     if (strlen(remoteip) == 0 || strlen(localip) == 0 || localport == 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
-    machine_connection_page.setup_ethernet_parameters(remoteip, localip, localport);
-    machine_connection_page.eeprom_save_ethernet_parameters();
-    nextion.nex_send_message("Exeption: Saved successfully");
+    machine_connection_page.ethernet_parameters.setup_ethernet_parameters(remoteip, localip, localport);
+    machine_connection_page.ethernet_parameters.eeprom_save_ethernet_parameters();
+    nextion.nex_send_message("Saved successfully");
   }
   // ABOUT PAGE
   void nx_update_about_page()
@@ -322,34 +323,34 @@ public:
 
     char building_name[15]{0};
 
-    nextion.nex_send_message("Exeption: Saving...");
+    nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t0.txt", building_name, sizeof(building_name));
     Serial.println("building_name: " + String(building_name));
     if (strlen(building_name) == 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_about_page.setup_building_name(building_name);
     machine_about_page.eeprom_save_building_name();
-    nextion.nex_send_message("Exeption: Saved successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_device_id()
   {
     int device_id = 0;
     char buildingname[20]{0};
-    nextion.nex_send_message("Exeption: Saving...");
+    nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t0.txt", buildingname, sizeof(buildingname));
     device_id = nextion.getNumberProperty("ABOUT", "n0.val");
     Serial.println("device_id: " + String(device_id));
     if (device_id == 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_about_page.setup_device_id(device_id);
     machine_about_page.eeprom_save_device_id();
-    nextion.nex_send_message("Exeption: Saved successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_device_name()
   {
@@ -357,17 +358,17 @@ public:
 
     char device_name[20]{0};
 
-    nextion.nex_send_message("Exeption: Saving...");
+    nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t1.txt", device_name, sizeof(device_name));
     Serial.println("device_name: " + String(device_name));
     if (strlen(device_name) == 0)
     {
-      nextion.nex_send_message("Error: Invalid data");
+      nextion.nex_send_message("Invalid data");
       return;
     }
     machine_about_page.setup_device_name(device_name);
     machine_about_page.eeprom_save_device_name();
-    nextion.nex_send_message("Exeption: Saved successfully");
+    nextion.nex_send_message("Saved successfully");
   }
   void nx_save_table_led_flag_status(bool value)
   {
@@ -380,6 +381,17 @@ public:
     function_log();
     machine_about_page.setup_frame_led_flag_status(value);
     machine_about_page.eeprom_put_frame_led_flag_status();
+  }
+
+  void udp_buffer_progress()
+  {
+    String str(machine_connection_page.ethernet_parameters.packetBuffer);
+    str = machine_connection_page.ethernet_parameters.packetBuffer;
+    if (str != NULL)
+    {
+      Serial.println("str: " + str);
+    }
+    memset(machine_connection_page.ethernet_parameters.packetBuffer, 0, sizeof(machine_connection_page.ethernet_parameters.packetBuffer));
   }
 };
 #endif
