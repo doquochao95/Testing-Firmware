@@ -1,10 +1,10 @@
 #include "stepper_handle.h"
 
 // Create a new instance of the AccelStepper class:
-AccelStepper stepperX = AccelStepper(motorInterfaceType, XstepPin, XdirPin); // 800 steps/rev,
-AccelStepper stepperY = AccelStepper(motorInterfaceType, YstepPin, YdirPin); // 800 Steps/rev, 4mm/rev => 10mm/2.5rev => 2000steps/10mm
-AccelStepper stepperZ = AccelStepper(motorInterfaceType, ZstepPin, ZdirPin);
-AccelStepper stepperW = AccelStepper(motorInterfaceType, WstepPin, WdirPin); // 2000 steps/rev, =>> maxspeed 1 rev/s
+AccelStepper stepperX = AccelStepper(motorInterfaceType, XstepPin, XdirPin); // 400 steps/rev, 10mm/rev => 10mm/1rev => 400steps/10mm
+AccelStepper stepperY = AccelStepper(motorInterfaceType, YstepPin, YdirPin); // 400 Steps/rev, 10mm/rev => 10mm/1rev => 400steps/10mm
+AccelStepper stepperZ = AccelStepper(motorInterfaceType, ZstepPin, ZdirPin); // 400 steps/rev, 4mm/rev => 4mm/1rev => 1000steps/10mm
+AccelStepper stepperW = AccelStepper(motorInterfaceType, WstepPin, WdirPin); // 2000 steps/rev
 
 machine_progress_class machine;
 nextion_extension nextions;
@@ -19,6 +19,8 @@ bool press_flagZ = false;
 int add_x = 0;
 int add_y = 0;
 int add_z = 0;
+
+
 
 void motor_set_speed_init()
 {

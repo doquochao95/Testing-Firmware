@@ -288,10 +288,14 @@ public:
             Serial.println(Udp.remotePort());
             memset(ethernet_parameters.packetBuffer, 0, sizeof(ethernet_parameters.packetBuffer));
             Udp.read(ethernet_parameters.packetBuffer, UDP_TX_PACKET_MAX_SIZE);
-            // String str(ethernet_para.packetBuffer);
-            // str = ethernet_para.packetBuffer;
             Serial.println("Buffer: " + String(ethernet_parameters.packetBuffer));
         }
+    }
+    void udp_reply(String parameter)
+    {
+        Udp.beginPacket(ethernet_parameters.remote_ip,ethernet_parameters.localPort);
+        Udp.print(parameter);
+        Udp.endPacket();
     }
 };
 #endif

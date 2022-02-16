@@ -16,13 +16,37 @@ public:
   ethernet_module_def machine_connection_page = ethernet_module_def(EEPROM_ETHERNET_START_ADD);
   identity_parameters_def machine_about_page = identity_parameters_def(EEPROM_IDENTITY_START_ADD);
 
-  int xresolution = 100; // step/cm
-  int yresolution = 100;
-  int zresolution = 50;
+  const char *offset_array[4] = {"offsetx", "offsety", "offsetz", "offsetw"};
+  const char *plus_array[4] = {"plusx", "plusy", "plusz", "plusw"};
+  const char *speed_array[4] = {"speedx", "speedy", "speedz", "speedw"};
+  const char *accel_array[4] = {"accelx", "accely", "accelz", "accelw"};
+
+  const char *slot_array[40] = {"a1", "a2", "a3", "a4", "a5"
+  , "b1", "b2", "b3", "b4", "b5"
+  , "c1", "c2", "c3", "c4", "c5"
+  , "d1", "d2", "d3", "d4", "d5"
+  , "e1", "e2", "e3", "e4", "e5"
+  , "f1", "f2", "f3", "f4", "f5"
+  , "g1", "g2", "g3", "g4", "g5"
+  , "h1", "h2", "h3", "h4", "h5"};
+
+  int character_count;
+
+  char parameter_name[10];
+  char parameter_value[10];
+
+  int xresolution = 40; // step/mm
+  int yresolution = 40;
+  int zresolution = 100;
   int wresolution = 200;
+
+  int droper_position[3]= {334,346,61}; //{x,y,z}
 
   bool init_flag = true;
   bool key_board_flag = false;
+
+  void (*resetFunc)(void) = 0; // Reset funtion
+
   void init()
   {
     machine_axis_page.eeprom_read_axis_parameter();
@@ -193,6 +217,18 @@ public:
     }
     machine_axis_page.axis_page_setup_speed_parameter(x_speed, y_speed, z_speed, w_speed);
     machine_axis_page.eeprom_write_speed_parameters();
+    nextion.nex_send_message("Saved successfully");
+  }
+  void nx_save_axis_page_specific_speed(char axis, int value)
+  {
+    function_log();
+    if (value < 0)
+    {
+      nextion.nex_send_message("Invalid data");
+      return;
+    }
+    machine_axis_page.axis_page_setup_specific_speed_parameter(axis, value);
+    machine_axis_page.eeprom_write_specific_speed_parameters(axis);
     nextion.nex_send_message("Saved successfully");
   }
   void nx_save_axis_page_acc()
@@ -383,15 +419,63 @@ public:
     machine_about_page.eeprom_put_frame_led_flag_status();
   }
 
-  void udp_buffer_progress()
+  String getParameter_fromBuffer(String string, char startSeparator, char endSeparator)
   {
-    String str(machine_connection_page.ethernet_parameters.packetBuffer);
-    str = machine_connection_page.ethernet_parameters.packetBuffer;
-    if (str != NULL)
+    bool flag = false;
+    int z = 0;
+    int string_len = string.length() + 1;
+    char char_array[string_len];
+    string.toCharArray(char_array, string_len);
+    char strtokIndx[string_len];
+    memset(strtokIndx, 0, sizeof(strtokIndx));
+    for (int i = 0; i < string_len - 1; i++)
     {
-      Serial.println("str: " + str);
+      if (!flag)
+      {
+        if (char_array[i] == startSeparator)
+        {
+          flag = true;
+          continue;
+        }
+        else
+        {
+          continue;
+        }
+      }
+      else
+      {
+        if (char_array[i] == endSeparator)
+        {
+          character_count = i;
+          break;
+        }
+        else
+        {
+          strtokIndx[z] = char_array[i];
+          z++;
+          continue;
+        }
+      }
+      break;
     }
-    memset(machine_connection_page.ethernet_parameters.packetBuffer, 0, sizeof(machine_connection_page.ethernet_parameters.packetBuffer));
+    String data = String(strtokIndx);
+    return data;
+  }
+  int getValue_fromParameter(String string, char separator)
+  {
+    int data;
+    int pos = string.indexOf(separator);
+    String index = string.substring(pos + 1);
+    const char *index_char;
+    index_char = index.c_str();
+    data = atoi(index_char);
+    return data;
+  }
+  String getName_fromParameter(String string, char separator)
+  {
+    int pos = string.indexOf(separator);
+    String index = string.substring(0, pos);
+    return index;
   }
 };
 #endif

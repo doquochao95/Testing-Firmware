@@ -6,7 +6,6 @@
 #include "machine_progress_handler.h"
 #include "machine_axis_parameters_handle.h"
 #include <nextion_extension.h>
-#include <stepper_extension.h>
 #include "SimpleTimer.h"
 
 #endif

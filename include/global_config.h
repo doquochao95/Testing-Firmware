@@ -46,6 +46,8 @@
 #define NEX_KEYBOARD_PAGE_INIT 0xD2
 #define NEX_KEYBOARD_PAGE_EXIT 0xD3
 
+#define NEX_RESET_DEVICE1 0xE3
+
 
 //page 08
 #define NEX_CONNECTION_PAGE_INIT 0xD4
@@ -55,6 +57,8 @@
 
 #define NEX_KEYBOARD2_PAGE_INIT 0xD8
 #define NEX_KEYBOARD2_PAGE_EXIT 0xD9
+
+#define NEX_RESET_DEVICE2 0xE4
 
 
 //page 10
@@ -69,6 +73,7 @@
 #define NEX_KEYBOARD3_PAGE_INIT 0xE1
 #define NEX_KEYBOARD3_PAGE_EXIT 0xE2
 
+#define NEX_RESET_DEVICE3 0xE5
 
 #define XdirPin 2
 #define XstepPin 3

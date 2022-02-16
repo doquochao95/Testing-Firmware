@@ -244,7 +244,6 @@ public:
     int zposition = 0;
 
     bool w_needle_table_status_flag = false;
-    
 
     void reset()
     {
@@ -545,6 +544,49 @@ public:
         }
         return 0;
         EEPROM.end();
+    }
+
+    void eeprom_write_specific_speed_parameters(char axis)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            eeprom_write_speed_parameter('x', x_speed_addr);
+            break;
+        case 'y':
+            eeprom_write_speed_parameter('y', y_speed_addr);
+            break;
+        case 'z':
+            eeprom_write_speed_parameter('z', z_speed_addr);
+            break;
+        case 'w':
+            eeprom_write_speed_parameter('w', w_speed_addr);
+            break;
+        }
+    }
+    void axis_page_setup_specific_speed_parameter(char axis, int value)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            x_speed = value;
+            Serial.println("New X speed: " + String(x_speed));
+            break;
+        case 'y':
+            y_speed = value;
+            Serial.println("New Y speed: " + String(y_speed));
+            break;
+        case 'z':
+            z_speed = value;
+            Serial.println("New Z speed: " + String(z_speed));
+            break;
+        case 'w':
+            w_speed = value;
+            Serial.println("New W speed: " + String(w_speed));
+            break;
+        }
     }
 };
 

@@ -11,6 +11,7 @@ extern AccelStepper stepperZ;
 extern AccelStepper stepperW;
 
 extern machine_progress_class machine;
+
 //myStepper.currentPosition();
 //stepperX.runToPosition(); //  finish when motor reahced to setted position
 //stepperX.run(); //finish when done 1 pulse
