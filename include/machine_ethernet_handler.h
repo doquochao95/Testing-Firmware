@@ -99,16 +99,21 @@ private:
     }
 
 public:
-    char local_ip_str[15] = "192.168.1.177";
+    char local_ip_str[15]; // = "192.168.1.177";
     IPAddress local_ip;
 
-    char remote_ip_str[15] = "192.168.1.103";
+    char remote_ip_str[15]; // = "192.168.1.103";
     IPAddress remote_ip;
     unsigned int localPort = 8080;
     uint8_t MAC[6] = {0xA8, 0x61, 0x0A, 0xAE, 0x28, 0xFF};
 
     char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
+    char c_packetBuffer[UDP_TX_PACKET_MAX_SIZE];
     char ReplyBuffer[UDP_TX_PACKET_MAX_SIZE];
+    String message;
+
+    String parameter;
+    String parameter_value;
 
     void ethernet_parameters_init(int storage_address)
     {
@@ -137,9 +142,9 @@ public:
         eeprom_read_local_ip(eeprom_local_ip_addr);
         eeprom_read_remote_ip(eeprom_remote_ip_addr);
         eeprom_read_port(eeprom_port_addr);
-        Serial.println("Read Remote IP: " + String(remote_ip_str));
-        Serial.println("Read Local IP: " + String(local_ip_str));
-        Serial.println("Read LocalPort IP: " + String(localPort));
+        Serial.println("Read RemoteIP: " + String(remote_ip_str));
+        Serial.println("Read LocalIP: " + String(local_ip_str));
+        Serial.println("Read Port : " + String(localPort));
         set_ipaddress();
     }
     void eeprom_save_MAC()
@@ -150,28 +155,81 @@ public:
     void eeprom_save_ethernet_parameters()
     {
         function_log();
-        eeprom_save_remote_ip(eeprom_remote_ip_addr);
+        eeprom_save_ethernet_local_ip();
+        eeprom_save_ethernet_remote_ip();
+        eeprom_save_ethernet_port();
+    }
+    void eeprom_save_ethernet_local_ip()
+    {
+        function_log();
         eeprom_save_local_ip(eeprom_local_ip_addr);
+    }
+    void eeprom_save_ethernet_remote_ip()
+    {
+        function_log();
+        eeprom_save_remote_ip(eeprom_remote_ip_addr);
+    }
+    void eeprom_save_ethernet_port()
+    {
+        function_log();
         eeprom_save_port(eeprom_port_addr);
     }
+
     void setup_machine_mac(uint8_t *mac)
     {
         function_log();
         memccpy(MAC, mac, 0, sizeof(MAC));
-        printf("New machine MAC: %sS", MAC);
+        printf("New MAC: %sS", MAC);
     }
     void setup_ethernet_parameters(char *RemoteIP, char *LocalIP, uint16_t port)
     {
         function_log();
-        localPort = port;
-        memccpy(remote_ip_str, RemoteIP, 0, sizeof(remote_ip_str));
+        setup_ethernet_local_ip(LocalIP);
+        setup_ethernet_remote_ip(RemoteIP);
+        setup_ethernet_port(port);
+    }
+    void setup_ethernet_local_ip(char *LocalIP)
+    {
+        function_log();
         memccpy(local_ip_str, LocalIP, 0, sizeof(local_ip_str));
-        set_ipaddress();
-        Serial.print("New Remote IP: ");
-        Serial.println(remote_ip);
-        Serial.print("New Local IP: ");
+        local_ip.fromString(local_ip_str);
+        Serial.print("New LocalIP: ");
         Serial.println(local_ip);
-        Serial.println("New LocalPort: " + String(localPort));
+    }
+    void setup_ethernet_remote_ip(char *RemoteIP)
+    {
+        function_log();
+        memccpy(remote_ip_str, RemoteIP, 0, sizeof(remote_ip_str));
+        remote_ip.fromString(remote_ip_str);
+        Serial.print("New RemoteIP: ");
+        Serial.println(remote_ip);
+    }
+    void setup_ethernet_port(uint16_t port)
+    {
+        function_log();
+        localPort = port;
+        Serial.println("New Port: " + String(localPort));
+    }
+
+    void set_message (String msg)
+    {
+        function_log();
+        message = msg;
+    }
+    void set_parameter (String para)
+    {
+        function_log();
+        parameter = para;
+    }
+    void set_parameter_value (int val )
+    {
+        function_log();
+        parameter_value = String(val);
+    }
+    void set_parameter_value (String val )
+    {
+        function_log();
+        parameter_value = val;
     }
 };
 
@@ -198,7 +256,7 @@ public:
         uint8_t exception;
         do
         {
-            nextion.nex_send_message("Connecting...");
+            nextion.nex_send_message("Connecting");
             Serial.println("Device MAC:");
             for (size_t i = 0; i < sizeof(ethernet_parameters.MAC); i++)
             {
@@ -217,12 +275,12 @@ public:
             switch (exception)
             {
             case 0:
-                Serial.println("Module was not found.");
-                nextion.nex_send_message("Module was not found");
+                Serial.println("Module not found.");
+                nextion.nex_send_message("Module not found");
                 break;
             case 1:
-                Serial.println("Cable is not connected.");
-                nextion.nex_send_message("Cable is disconnected");
+                Serial.println("Cable disconnected");
+                nextion.nex_send_message("Cable disconnected");
                 break;
             case 2:
                 Serial.println("Connection Success");
@@ -237,7 +295,6 @@ public:
         get_ethernet_module_status();
         if (reset_module)
         {
-            Serial.println(reset_module ? "reset_module: true" : "reset_module: false");
             setting_up_ethernet_module();
         }
         else
@@ -291,10 +348,42 @@ public:
             Serial.println("Buffer: " + String(ethernet_parameters.packetBuffer));
         }
     }
-    void udp_reply(String parameter)
+    void udp_c_checking()
     {
-        Udp.beginPacket(ethernet_parameters.remote_ip,ethernet_parameters.localPort);
-        Udp.print(parameter);
+        int packetSize = Udp.parsePacket();
+        if (packetSize)
+        {
+            Serial.print("Received packet of size ");
+            Serial.println(packetSize);
+            Serial.print("From ");
+            IPAddress remote = Udp.remoteIP();
+            for (int i = 0; i < 4; i++)
+            {
+                Serial.print(remote[i], DEC);
+                if (i < 3)
+                {
+                    Serial.print(".");
+                }
+            }
+            Serial.print(", port ");
+            Serial.println(Udp.remotePort());
+            memset(ethernet_parameters.c_packetBuffer, 0, sizeof(ethernet_parameters.c_packetBuffer));
+            Udp.read(ethernet_parameters.c_packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+            Serial.println("c_Buffer: " + String(ethernet_parameters.c_packetBuffer));
+        }
+    }
+    void udp_reply_para()
+    {
+        function_log();
+        Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
+        Udp.print("<" + ethernet_parameters.parameter + ":" + ethernet_parameters.parameter_value + ">");
+        Udp.endPacket();
+    }
+    void udp_reply_msg()
+    {
+        function_log();
+        Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
+        Udp.print("<msg:" + ethernet_parameters.message + ">");
         Udp.endPacket();
     }
 };

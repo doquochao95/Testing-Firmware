@@ -20,9 +20,13 @@ void air_checking();
 void udp_listening();
 
 void udp_buffer_progress();
-void parameter_checking(String name, int value);
+void parameter_checking(String name, String n_value);
 void buffer_speed_check(String name, int value);
 void picking_check (String position, int needleqty);
+void funtions_check(String name, int value);
 
+void buffer_ethernet_parameter_check(String name, String value);
+
+int camera_checking();
 
 #endif

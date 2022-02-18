@@ -20,18 +20,12 @@ public:
   const char *plus_array[4] = {"plusx", "plusy", "plusz", "plusw"};
   const char *speed_array[4] = {"speedx", "speedy", "speedz", "speedw"};
   const char *accel_array[4] = {"accelx", "accely", "accelz", "accelw"};
+  const char *connection_array[3] = {"localip", "remoteip","localport"};
 
-  const char *slot_array[40] = {"a1", "a2", "a3", "a4", "a5"
-  , "b1", "b2", "b3", "b4", "b5"
-  , "c1", "c2", "c3", "c4", "c5"
-  , "d1", "d2", "d3", "d4", "d5"
-  , "e1", "e2", "e3", "e4", "e5"
-  , "f1", "f2", "f3", "f4", "f5"
-  , "g1", "g2", "g3", "g4", "g5"
-  , "h1", "h2", "h3", "h4", "h5"};
+  const char *slot_array[40] = {"a1", "a2", "a3", "a4", "a5", "b1", "b2", "b3", "b4", "b5", "c1", "c2", "c3", "c4", "c5", "d1", "d2", "d3", "d4", "d5", "e1", "e2", "e3", "e4", "e5", "f1", "f2", "f3", "f4", "f5", "g1", "g2", "g3", "g4", "g5", "h1", "h2", "h3", "h4", "h5"};
 
   int character_count;
-
+int c_character_count;
   char parameter_name[10];
   char parameter_value[10];
 
@@ -40,7 +34,9 @@ public:
   int zresolution = 100;
   int wresolution = 200;
 
-  int droper_position[3]= {334,346,61}; //{x,y,z}
+  int droper_position[3] = {334, 346, 61}; //{x,y,z}
+  int parking_pos[3] = {334, 100, 50}; //{x,y,z}
+  bool park;
 
   bool init_flag = true;
   bool key_board_flag = false;
@@ -57,7 +53,6 @@ public:
   void nx_update_axis_page()
   {
     function_log();
-    Serial.println(key_board_flag ? "Keyboard: true" : "Keyboard: false");
     if (key_board_flag == false)
     {
       nx_clear_movement_page();
@@ -97,7 +92,7 @@ public:
   void nx_set_xyz_position()
   {
     function_log();
-    Serial.println("Funtion: " + String(__func__) + " xposition: " + String(machine_axis_page.xposition) + " yposition: " + String(machine_axis_page.yposition) + " zposition: " + String(machine_axis_page.zposition));
+    // Serial.println("Funtion: " + String(__func__) + " xposition: " + String(machine_axis_page.xposition) + " yposition: " + String(machine_axis_page.yposition) + " zposition: " + String(machine_axis_page.zposition));
     nextion.setNumberProperty("AXIS", "n0.val", machine_axis_page.xposition);
     nextion.setNumberProperty("AXIS", "n1.val", machine_axis_page.yposition);
     nextion.setNumberProperty("AXIS", "n2.val", machine_axis_page.zposition);
@@ -108,7 +103,7 @@ public:
     int last_posX = machine_axis_page.eeprom_read_position_parameters('x');
     int last_posY = machine_axis_page.eeprom_read_position_parameters('y');
     int last_posZ = machine_axis_page.eeprom_read_position_parameters('z');
-    Serial.println("Funtion: " + String(__func__) + " Last position: " + String(last_posX) + " Last position: " + String(last_posY) + " Last position: " + String(last_posZ));
+    // Serial.println("Funtion: " + String(__func__) + " Last position: " + String(last_posX) + " Last position: " + String(last_posY) + " Last position: " + String(last_posZ));
     nextion.setNumberProperty("AXIS", "n0.val", last_posX);
     nextion.setNumberProperty("AXIS", "n1.val", last_posY);
     nextion.setNumberProperty("AXIS", "n2.val", last_posZ);
@@ -144,7 +139,7 @@ public:
     function_log();
     machine_axis_page.eeprom_get_w_status();
     bool status = machine_axis_page.w_needle_table_status_flag;
-    Serial.println(status ? "W_needle_table_flag: true" : "W_needle_table_flag: false");
+    // Serial.println(status ? "W_needle_table_flag: true" : "W_needle_table_flag: false");
     if (status == false)
     {
       nextion.nex_set_vis("b17", 1);
@@ -256,7 +251,6 @@ public:
   void nx_update_connection_page()
   {
     function_log();
-    Serial.println(key_board_flag ? "Key board: true" : "Key board: false");
     if (key_board_flag == false)
     {
       nextion.setStringProperty("CONNECTION", "t0.txt", machine_connection_page.ethernet_parameters.remote_ip_str);
@@ -324,7 +318,6 @@ public:
   void nx_update_about_page()
   {
     function_log();
-    Serial.println(key_board_flag ? "Key board: true" : "Key board: false");
     if (key_board_flag == false)
     {
       nextion.setStringProperty("ABOUT", "t0.txt", machine_about_page.building_name);
@@ -461,7 +454,7 @@ public:
     String data = String(strtokIndx);
     return data;
   }
-  int getValue_fromParameter(String string, char separator)
+  int getintValue_fromParameter(String string, char separator)
   {
     int data;
     int pos = string.indexOf(separator);
@@ -475,6 +468,12 @@ public:
   {
     int pos = string.indexOf(separator);
     String index = string.substring(0, pos);
+    return index;
+  }
+  String getstringValue_fromParameter(String string, char separator)
+  {
+    int pos = string.indexOf(separator);
+    String index = string.substring(pos + 1);
     return index;
   }
 };

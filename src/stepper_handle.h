@@ -39,4 +39,15 @@ void homing_z_axis ();
 void homing_w_axis ();
 
 void homing_machine ();
+
+void homing_machine_before_pick();
+void homing_w_axis_picking();
+void homing_z_axis_picking();
+void homing_x_axis_picking();
+void homing_y_axis_picking();
+
+
+bool machine_parking(int x, int y, int z);
+bool machine_unparking();
+
 #endif
