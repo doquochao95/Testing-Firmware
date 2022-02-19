@@ -221,6 +221,7 @@ void PAGE_LOADING_EVENT_CALLBACK(uint8_t pageId, uint8_t componentId, uint8_t ev
     if (componentId == NX_BUT_SAVE_ETHERNET_PARAMETERS)
     {
       machine_progress.nx_save_ethernet_parameters();
+      ethernet_init();
     }
     if (componentId == NEX_KEYBOARD2_PAGE_INIT)
     {
@@ -349,12 +350,24 @@ void sensors_checking()
 }
 void air_checking()
 {
+  int air_status = 0;
   digitalWrite(AirSuckPicker, HIGH);
   delay(100);
   while (digitalRead(AirSuplied))
   {
+    if (air_status == 0)
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("air_failed");
+      machine_progress.machine_connection_page.udp_reply_msg();
+    }
+    air_status++;
     Serial.println("Please supply airpressure");
     delay(100);
+  }
+  if (air_status != 0)
+  {
+    machine_progress.machine_connection_page.ethernet_parameters.set_message("air_success");
+    machine_progress.machine_connection_page.udp_reply_msg();
   }
   Serial.println("Airpressure success");
   digitalWrite(AirSuckPicker, LOW);
@@ -375,6 +388,8 @@ void udp_buffer_progress()
 
   if (buffer_string != NULL)
   {
+    machine_progress.machine_connection_page.ethernet_parameters.set_message("receive_success");
+    machine_progress.machine_connection_page.udp_reply_msg();
     for (int i = 0; i < string_len; i++)
     {
       count += (buffer_string[i] == ':');
@@ -397,6 +412,9 @@ void parameter_checking(String name, String n_value)
   index_char = n_value.c_str();
   int value = atoi(index_char);
   buffer_speed_check(name, value);
+  buffer_accel_check(name, value);
+  buffer_offset_check(name, value);
+  buffer_plus_check(name, value);
   picking_check(name, value);
   funtions_check(name, value);
   buffer_ethernet_parameter_check(name, n_value);
@@ -404,14 +422,98 @@ void parameter_checking(String name, String n_value)
 
 void buffer_speed_check(String name, int value)
 {
+  bool save_status;
   for (int i = 0; i < 4; i++)
   {
     if (strcmp(machine_progress.speed_array[i], name.c_str()) == 0)
     {
       char axis = name.charAt(name.length() - 1);
-      machine_progress.nx_save_axis_page_specific_speed(axis, value);
+      save_status = machine_progress.buffer_save_axis_page_specific_speed(axis, value);
       motor_set_speed_init();
       machine_progress.nx_update_axis_page();
+      if (save_status)
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_success");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      else
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_failed");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      break;
+    }
+  }
+}
+void buffer_accel_check(String name, int value)
+{
+  bool save_status;
+  for (int i = 0; i < 4; i++)
+  {
+    if (strcmp(machine_progress.accel_array[i], name.c_str()) == 0)
+    {
+      char axis = name.charAt(name.length() - 1);
+      save_status = machine_progress.buffer_save_axis_page_specific_accel(axis, value);
+      motor_set_acc_init();
+      machine_progress.nx_update_axis_page();
+      if (save_status)
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_success");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      else
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_failed");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      break;
+    }
+  }
+}
+void buffer_offset_check(String name, int value)
+{
+  bool save_status;
+  for (int i = 0; i < 4; i++)
+  {
+    if (strcmp(machine_progress.offset_array[i], name.c_str()) == 0)
+    {
+      char axis = name.charAt(name.length() - 1);
+      save_status = machine_progress.buffer_save_axis_page_specific_offset(axis, value);
+      machine_progress.nx_update_axis_page();
+      if (save_status)
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_success");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      else
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_failed");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      break;
+    }
+  }
+}
+void buffer_plus_check(String name, int value)
+{
+  bool save_status;
+  for (int i = 0; i < 4; i++)
+  {
+    if (strcmp(machine_progress.plus_array[i], name.c_str()) == 0)
+    {
+      char axis = name.charAt(name.length() - 1);
+      save_status = machine_progress.buffer_save_axis_page_specific_plus(axis, value);
+      machine_progress.nx_update_axis_page();
+      if (save_status)
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_success");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
+      else
+      {
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("save_failed");
+        machine_progress.machine_connection_page.udp_reply_msg();
+      }
       break;
     }
   }
@@ -471,6 +573,7 @@ void picking_check(String position, int needleqty)
     }
     homing_machine_before_pick();
     delay(500);
+    // Move XY to picking position and Z to prepairing posittion
     stepperX.moveTo((machine_progress.machine_axis_page.x_offset + machine_progress.machine_axis_page.x_plus * x_scale) * machine_progress.xresolution);
     stepperY.moveTo((machine_progress.machine_axis_page.y_offset + machine_progress.machine_axis_page.y_plus * y_scale) * machine_progress.yresolution);
     stepperZ.moveTo(0 - 15 * machine_progress.zresolution);
@@ -480,13 +583,14 @@ void picking_check(String position, int needleqty)
       stepperY.run();
       stepperZ.run();
     }
-
+    // Turn on picker
     digitalWrite(AirSuckPicker, HIGH);
-
+    // Move Z to needle position
     stepperZ.moveTo(0 - (machine_progress.machine_axis_page.z_offset - machine_progress.machine_axis_page.z_plus * z_scale) * machine_progress.zresolution);
     while (stepperZ.distanceToGo() != 0)
     {
       stepperZ.run();
+      // Check for higher needle qty
       if (!digitalRead(NeedleSucked) && stepperZ.distanceToGo() < (-6 * machine_progress.zresolution))
       {
         stepperZ.stop();
@@ -507,256 +611,38 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("Higher quantity in stock");
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("higher_needle_qty");
         complete_status = false;
         break;
       }
     }
-    if (complete_status)
+    if (complete_status) // Needle on picker
     {
-      bool sucked = true;
-      stepperZ.moveTo(0 - 15 * machine_progress.zresolution);
-      while (stepperZ.distanceToGo() != 0)
+      bool z_sucked = true;
+      bool xy_sucked = true;
+      bool z_picked = true;
+      // move Z to prepairing position
+      if (!digitalRead(NeedleSucked) && stepperZ.distanceToGo() == 0) // check for needle is sucked or empty
       {
-        if (digitalRead(NeedleSucked))
-        {
-          digitalWrite(AirSuckPicker, LOW);
-          stepperZ.stop();
-          while (stepperZ.distanceToGo() != 0)
-          {
-            stepperZ.run();
-          }
-          sucked = false;
-          break;
-        }
-        else
-        {
-          stepperZ.run();
-        }
-      }
-      if (sucked)
-      {
-        if (digitalRead(PickerDetector))
-        {
-          stepperX.moveTo(machine_progress.droper_position[0] * machine_progress.xresolution);
-          stepperY.moveTo(machine_progress.droper_position[1] * machine_progress.yresolution);
-          while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-          {
-            if (digitalRead(NeedleSucked))
-            {
-              sucked = false;
-              break;
-            }
-            else
-            {
-              stepperX.run();
-              stepperY.run();
-            }
-          }
-          if (sucked)
-          {
-            bool needle_stucked = false;
-            int int_camera = 0; // 0: null , 1: true, 3: false
-            bool camera;
-            int count = 0;
-            stepperZ.moveTo(0 - machine_progress.droper_position[2] * machine_progress.zresolution); // machine_progress.droper_position[2] <=> droperZ position
-            while (stepperZ.distanceToGo() != 0)
-            {
-              stepperZ.run();
-            }
-
-            digitalWrite(AirSuckPicker, LOW);
-
-            stepperZ.moveTo(0);
-            while (stepperZ.distanceToGo() != 0)
-            {
-              stepperZ.run();
-            }
-            stepperZ.setCurrentPosition(0);
-            ///////////
-            Serial.println("camera checking");
-            machine_progress.machine_connection_page.ethernet_parameters.set_message("check_camera");
-            machine_progress.machine_connection_page.udp_reply_msg();
-            while (1)
-            {
-              int_camera = camera_checking();
-              if (int_camera == 0)
-              {
-                count++;
-                if (count == 100)
-                {
-                  camera = false;
-                  break;
-                }
-              }
-              else if (int_camera == 1)
-              {
-                camera = true;
-                break;
-              }
-              else
-              {
-                camera = false;
-                break;
-              }
-              delay(100);
-            }
-            //////////
-            Serial.println(camera ? "camera: true" : "camera: false");
-            if (camera)
-            {
-              digitalWrite(DropCylinder, HIGH);
-              while (!digitalRead(DropperDetector))
-              {
-                count++;
-                if (count == 100)
-                {
-                  needle_stucked = true;
-                  break;
-                }
-                delay(100);
-              }
-              if (needle_stucked)
-              {
-                digitalWrite(DropCylinder, LOW);
-                stepperX.moveTo(0);
-                stepperY.moveTo(0);
-                while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-                {
-                  stepperX.run();
-                  stepperY.run();
-                }
-                stepperX.setCurrentPosition(0);
-                stepperY.setCurrentPosition(0);
-                machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stucked");
-                complete_status = false;
-              }
-              else
-              {
-                digitalWrite(DropCylinder, LOW);
-                stepperX.moveTo(0);
-                stepperY.moveTo(0);
-                while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-                {
-                  stepperX.run();
-                  stepperY.run();
-                }
-                stepperX.setCurrentPosition(0);
-                stepperY.setCurrentPosition(0);
-                machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_supplied");
-                complete_status = true;
-                ////////
-              }
-            }
-            else
-            {
-              stepperZ.moveTo(0 - machine_progress.droper_position[2] * machine_progress.zresolution);
-              while (stepperZ.distanceToGo() != 0)
-              {
-                stepperZ.run();
-              }
-              digitalWrite(AirSuckPicker, HIGH);
-              stepperZ.moveTo(0 - 15 * machine_progress.zresolution);
-              while (stepperZ.distanceToGo() != 0)
-              {
-                stepperZ.run();
-              }
-              delay(300);
-              stepperX.moveTo((machine_progress.machine_axis_page.x_offset + machine_progress.machine_axis_page.x_plus * x_scale) * machine_progress.xresolution);
-              stepperY.moveTo((machine_progress.machine_axis_page.y_offset + machine_progress.machine_axis_page.y_plus * y_scale) * machine_progress.yresolution);
-              while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-              {
-                stepperX.run();
-                stepperY.run();
-              }
-              stepperZ.moveTo(0 - (machine_progress.machine_axis_page.z_offset - machine_progress.machine_axis_page.z_plus * z_scale) * machine_progress.zresolution);
-              while (stepperZ.distanceToGo() != 0)
-              {
-                stepperZ.run();
-              }
-              digitalWrite(AirSuckPicker, LOW);
-              stepperZ.moveTo(0);
-              while (stepperZ.distanceToGo() != 0)
-              {
-                stepperZ.run();
-              }
-              stepperZ.setCurrentPosition(0);
-              stepperX.moveTo(0);
-              stepperY.moveTo(0);
-              while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-              {
-                stepperX.run();
-                stepperY.run();
-              }
-              stepperX.setCurrentPosition(0);
-              stepperY.setCurrentPosition(0);
-              machine_progress.machine_connection_page.ethernet_parameters.set_message("camera_failed");
-              complete_status = false;
-            }
-          }
-          else
-          {
-            stepperX.stop();
-            stepperY.stop();
-            while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-            {
-              stepperX.run();
-              stepperY.run();
-            }
-            digitalWrite(AirSuckPicker, LOW);
-            delay(500);
-            stepperZ.moveTo(0);
-            while (stepperZ.distanceToGo() != 0)
-            {
-              stepperZ.run();
-            }
-            stepperZ.setCurrentPosition(0);
-            delay(100);
-            stepperX.moveTo(0);
-            stepperY.moveTo(0);
-            while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-            {
-              stepperX.run();
-              stepperY.run();
-            }
-            stepperX.setCurrentPosition(0);
-            stepperY.setCurrentPosition(0);
-            machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_dropped");
-            complete_status = false;
-          }
-        }
-        else
-        {
-          digitalWrite(AirSuckPicker, LOW);
-          stepperZ.moveTo(0);
-          while (stepperZ.distanceToGo() != 0)
-          {
-            stepperZ.run();
-          }
-          stepperZ.setCurrentPosition(0);
-          stepperX.moveTo(0);
-          stepperY.moveTo(0);
-          while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
-          {
-            stepperX.run();
-            stepperY.run();
-          }
-          stepperX.setCurrentPosition(0);
-          stepperY.setCurrentPosition(0);
-          machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty");
-          complete_status = false;
-        }
+        z_picked = true;
       }
       else
       {
-        delay(500);
+        z_picked = false;
+      }
+
+      if (!z_picked) // needle stock is empty
+      {
+        // turn off picker
+        digitalWrite(AirSuckPicker, LOW);
+        // move z back to zero
         stepperZ.moveTo(0);
         while (stepperZ.distanceToGo() != 0)
         {
           stepperZ.run();
         }
         stepperZ.setCurrentPosition(0);
-        delay(100);
+        // move xy back to zero
         stepperX.moveTo(0);
         stepperY.moveTo(0);
         while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
@@ -766,8 +652,286 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_dropped");
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty");
         complete_status = false;
+      }
+      else // needle is sucked
+      {
+        // move z to prepairing porition
+        stepperZ.moveTo(0 - 15 * machine_progress.zresolution);
+        while (stepperZ.distanceToGo() != 0)
+        {
+          // Check for needle still on picker or dropped
+          if (digitalRead(NeedleSucked)) // needle is dropped when z back
+          {
+            digitalWrite(AirSuckPicker, LOW);
+            stepperZ.stop();
+            while (stepperZ.distanceToGo() != 0)
+            {
+              stepperZ.run();
+            }
+            z_sucked = false;
+            break;
+          }
+          else // needle still on picker
+          {
+            stepperZ.run();
+          }
+        }
+        if (z_sucked) // needle is still on picker
+        {
+          if (digitalRead(PickerDetector)) // needle is still on picker again
+          {
+            // move XY to dropper position
+            stepperX.moveTo(machine_progress.droper_position[0] * machine_progress.xresolution);
+            stepperY.moveTo(machine_progress.droper_position[1] * machine_progress.yresolution);
+            while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+            {
+              // Check for needle still on picker or dropped
+              if (digitalRead(NeedleSucked))
+              {
+                xy_sucked = false;
+                break;
+              }
+              else
+              {
+                stepperX.run();
+                stepperY.run();
+              }
+            }
+            if (xy_sucked) // needle is still on picker
+            {
+              bool needle_stucked = false;
+              int int_camera = 0; // 0: null , 1: true, 3: false
+              bool camera;
+              int count = 0;
+              // move Z to dropping position
+              stepperZ.moveTo(0 - machine_progress.droper_position[2] * machine_progress.zresolution);
+              while (stepperZ.distanceToGo() != 0)
+              {
+                stepperZ.run();
+              }
+              // turn off picker
+              digitalWrite(AirSuckPicker, LOW);
+              // move z to Zero
+              stepperZ.moveTo(0);
+              while (stepperZ.distanceToGo() != 0)
+              {
+                stepperZ.run();
+              }
+              stepperZ.setCurrentPosition(0);
+              // check for camera permission
+              Serial.println("camera checking");
+              machine_progress.machine_connection_page.ethernet_parameters.set_message("check_camera");
+              machine_progress.machine_connection_page.udp_reply_msg();
+              while (1)
+              {
+                // get camera permisstion status
+                int_camera = camera_checking();
+                if (int_camera == 0)
+                {
+                  count++;
+                  if (count == 100)
+                  {
+                    camera = false;
+                    break;
+                  }
+                }
+                else if (int_camera == 1)
+                {
+                  camera = true;
+                  break;
+                }
+                else
+                {
+                  camera = false;
+                  break;
+                }
+                delay(100);
+              }
+              // Serial.println(camera ? "camera: true" : "camera: false");
+              if (camera) // camera permit = true
+              {
+                // turn of droper cylinder
+                digitalWrite(DropCylinder, HIGH);
+                // check for needle is stucked or not
+                while (!digitalRead(DropperDetector))
+                {
+                  count++;
+                  if (count == 300)
+                  {
+                    needle_stucked = true;
+                    break;
+                  }
+                  delay(100);
+                }
+                if (needle_stucked) // needle is stuck
+                {
+                  digitalWrite(DropCylinder, LOW);
+                  stepperX.moveTo(0);
+                  stepperY.moveTo(0);
+                  while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+                  {
+                    stepperX.run();
+                    stepperY.run();
+                  }
+                  stepperX.setCurrentPosition(0);
+                  stepperY.setCurrentPosition(0);
+                  machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stucked");
+                  complete_status = false;
+                }
+                else // needle supplied success
+                {
+                  digitalWrite(DropCylinder, LOW);
+                  stepperX.moveTo(0);
+                  stepperY.moveTo(0);
+                  while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+                  {
+                    stepperX.run();
+                    stepperY.run();
+                  }
+                  stepperX.setCurrentPosition(0);
+                  stepperY.setCurrentPosition(0);
+                  machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_supplied");
+                  complete_status = true;
+                }
+              }
+              else // camera permit = false
+              {
+                // move z to dropper posotion
+                stepperZ.moveTo(0 - machine_progress.droper_position[2] * machine_progress.zresolution);
+                while (stepperZ.distanceToGo() != 0)
+                {
+                  stepperZ.run();
+                }
+                // turn on picker
+                digitalWrite(AirSuckPicker, HIGH);
+                // move z to preparing positon
+                stepperZ.moveTo(0 - 15 * machine_progress.zresolution);
+                while (stepperZ.distanceToGo() != 0)
+                {
+                  stepperZ.run();
+                }
+                delay(300);
+                // move xy back to picking position
+                stepperX.moveTo((machine_progress.machine_axis_page.x_offset + machine_progress.machine_axis_page.x_plus * x_scale) * machine_progress.xresolution);
+                stepperY.moveTo((machine_progress.machine_axis_page.y_offset + machine_progress.machine_axis_page.y_plus * y_scale) * machine_progress.yresolution);
+                while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+                {
+                  stepperX.run();
+                  stepperY.run();
+                }
+                // move z to last needle position
+                stepperZ.moveTo(0 - (machine_progress.machine_axis_page.z_offset - machine_progress.machine_axis_page.z_plus * z_scale) * machine_progress.zresolution);
+                while (stepperZ.distanceToGo() != 0)
+                {
+                  stepperZ.run();
+                }
+                // drop needle back
+                digitalWrite(AirSuckPicker, LOW);
+                // move z back to zero
+                stepperZ.moveTo(0);
+                while (stepperZ.distanceToGo() != 0)
+                {
+                  stepperZ.run();
+                }
+                stepperZ.setCurrentPosition(0);
+                // move xy back to zero
+                stepperX.moveTo(0);
+                stepperY.moveTo(0);
+                while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+                {
+                  stepperX.run();
+                  stepperY.run();
+                }
+                stepperX.setCurrentPosition(0);
+                stepperY.setCurrentPosition(0);
+                machine_progress.machine_connection_page.ethernet_parameters.set_message("camera_failed");
+                complete_status = false;
+              }
+            }
+            else // needle is dropped when go xy
+            {
+              // stop xy immediately
+              stepperX.stop();
+              stepperY.stop();
+              while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+              {
+                stepperX.run();
+                stepperY.run();
+              }
+              // turn off picker
+              digitalWrite(AirSuckPicker, LOW);
+              delay(500);
+              // move z back to zero
+              stepperZ.moveTo(0);
+              while (stepperZ.distanceToGo() != 0)
+              {
+                stepperZ.run();
+              }
+              stepperZ.setCurrentPosition(0);
+              delay(100);
+              // move xy back to zero
+              stepperX.moveTo(0);
+              stepperY.moveTo(0);
+              while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+              {
+                stepperX.run();
+                stepperY.run();
+              }
+              stepperX.setCurrentPosition(0);
+              stepperY.setCurrentPosition(0);
+              machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_dropped_xy");
+              complete_status = false;
+            }
+          }
+          else // needle is not on picker
+          {
+            // turn off picker
+            digitalWrite(AirSuckPicker, LOW);
+            // move z back to zero
+            stepperZ.moveTo(0);
+            while (stepperZ.distanceToGo() != 0)
+            {
+              stepperZ.run();
+            }
+            stepperZ.setCurrentPosition(0);
+            // move xy back to zero
+            stepperX.moveTo(0);
+            stepperY.moveTo(0);
+            while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+            {
+              stepperX.run();
+              stepperY.run();
+            }
+            stepperX.setCurrentPosition(0);
+            stepperY.setCurrentPosition(0);
+            machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_problem");
+            complete_status = false;
+          }
+        }
+        else // needle is dropped when go z
+        {
+          delay(500);
+          stepperZ.moveTo(0);
+          while (stepperZ.distanceToGo() != 0)
+          {
+            stepperZ.run();
+          }
+          stepperZ.setCurrentPosition(0);
+          delay(100);
+          stepperX.moveTo(0);
+          stepperY.moveTo(0);
+          while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0)
+          {
+            stepperX.run();
+            stepperY.run();
+          }
+          stepperX.setCurrentPosition(0);
+          stepperY.setCurrentPosition(0);
+          machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_dropped_z");
+          complete_status = false;
+        }
       }
     }
     machine_progress.machine_connection_page.ethernet_parameters.set_parameter("status");
@@ -884,10 +1048,7 @@ int camera_checking()
       }
     }
   }
-  else
-  {
-    return 0;
-  }
+  return 0;
 }
 void buffer_ethernet_parameter_check(String name, String value)
 {
@@ -895,6 +1056,31 @@ void buffer_ethernet_parameter_check(String name, String value)
   {
     if (strcmp(machine_progress.connection_array[i], name.c_str()) == 0)
     {
+      if (name == machine_progress.connection_array[0])
+      {
+        char *c_value;
+        strcpy(c_value, value.c_str());
+        machine_progress.machine_connection_page.ethernet_parameters.setup_ethernet_local_ip(c_value);
+        machine_progress.machine_connection_page.ethernet_parameters.eeprom_save_ethernet_local_ip();
+        ethernet_init();
+      }
+      else if (name == machine_progress.connection_array[1])
+      {
+        char *c_value;
+        strcpy(c_value, value.c_str());
+        machine_progress.machine_connection_page.ethernet_parameters.setup_ethernet_remote_ip(c_value);
+        machine_progress.machine_connection_page.ethernet_parameters.eeprom_save_ethernet_remote_ip();
+        ethernet_init();
+      }
+      else
+      {
+        const char *c_value = value.c_str();
+        int c_int_value = atoi(c_value);
+        machine_progress.machine_connection_page.ethernet_parameters.setup_ethernet_port(c_int_value);
+        machine_progress.machine_connection_page.ethernet_parameters.eeprom_save_ethernet_port();
+        ethernet_init();
+      }
+      machine_progress.nx_update_connection_page();
       Serial.println(name);
       Serial.println(value);
     }

@@ -72,10 +72,10 @@ void motor_forward(char axis, int value)
   int x_value = nextions.getNumberProperty("AXIS", "n0.val");
   int y_value = nextions.getNumberProperty("AXIS", "n1.val");
   int z_value = nextions.getNumberProperty("AXIS", "n2.val");
-  Serial.println("x_value " + String(x_value) +
-                 " y_value: " + String(y_value) +
-                 " z_value: " + String(z_value) +
-                 " value: " + String(value));
+  // Serial.println("x_value " + String(x_value) +
+  //                " y_value: " + String(y_value) +
+  //                " z_value: " + String(z_value) +
+  //                " value: " + String(value));
   switch (axis)
   {
   case 'x':
@@ -353,17 +353,17 @@ void motor_back(char axis, int value)
   int x_value = nextions.getNumberProperty("AXIS", "n0.val");
   int y_value = nextions.getNumberProperty("AXIS", "n1.val");
   int z_value = nextions.getNumberProperty("AXIS", "n2.val");
-  Serial.println("x_value " + String(x_value) +
-                 " y_value: " + String(y_value) +
-                 " z_value: " + String(z_value) +
-                 " value: " + String(value));
+  // Serial.println("x_value " + String(x_value) +
+  //                " y_value: " + String(y_value) +
+  //                " z_value: " + String(z_value) +
+  //                " value: " + String(value));
   switch (axis)
   {
   case 'x':
   {
     if (x_value <= 0 || (x_value - value) < 0)
     {
-      Serial.println("RETURN");
+      // Serial.println("RETURN");
       return;
     }
     else
@@ -455,7 +455,7 @@ void motor_back(char axis, int value)
   {
     if (y_value <= 0 || (y_value - value) < 0)
     {
-      Serial.println("RETURN");
+      // Serial.println("RETURN");
       return;
     }
     else
@@ -877,7 +877,7 @@ void homing_machine()
 void homing_x_axis_picking()
 {
   long initial_homing = -1;
-  Serial.print("Stepper X is Homing . . . ");
+  // Serial.print("Stepper X is Homing . . . ");
   while (!digitalRead(HomeX))
   {                                  // Make the Stepper move CCW until the switch is activated
     stepperX.moveTo(initial_homing); // Set the position to move to
@@ -900,7 +900,7 @@ void homing_x_axis_picking()
 void homing_y_axis_picking()
 {
   long initial_homing = -1;
-  Serial.print("Stepper Y is Homing . . . ");
+  // Serial.print("Stepper Y is Homing . . . ");
   while (!digitalRead(HomeY))
   {                                  // Make the Stepper move CCW until the switch is activated
     stepperY.moveTo(initial_homing); // Set the position to move to
@@ -923,7 +923,7 @@ void homing_y_axis_picking()
 void homing_z_axis_picking()
 {
   long initial_homing = 1;
-  Serial.print("Stepper Z is Homing . . . ");
+  // Serial.print("Stepper Z is Homing . . . ");
   while (!digitalRead(HomeZ))
   {                                  // Make the Stepper move CCW until the switch is activated
     stepperZ.moveTo(initial_homing); // Set the position to move to
@@ -946,7 +946,7 @@ void homing_z_axis_picking()
 void homing_w_axis_picking()
 {
   stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * 100);
-  Serial.print("Stepper W is Homing . . . ");
+  // Serial.print("Stepper W is Homing . . . ");
   while (1)
   {
     if (digitalRead(OvertravelW2) == HIGH)

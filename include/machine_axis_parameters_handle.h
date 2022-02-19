@@ -319,10 +319,10 @@ public:
         y_offset = yoffset;
         z_offset = zoffset;
         w_offset = woffset;
-        Serial.println("New X offset:" + String(x_offset));
-        Serial.println("New Y offset:" + String(y_offset));
-        Serial.println("New Z offset:" + String(z_offset));
-        Serial.println("New W offset:" + String(w_offset));
+        // Serial.println("New X offset:" + String(x_offset));
+        // Serial.println("New Y offset:" + String(y_offset));
+        // Serial.println("New Z offset:" + String(z_offset));
+        // Serial.println("New W offset:" + String(w_offset));
     }
     void axis_page_setup_plus_parameter(int xplus, int yplus, int zplus, int wplus)
     {
@@ -331,10 +331,10 @@ public:
         y_plus = yplus;
         z_plus = zplus;
         w_plus = wplus;
-        Serial.println("New X plus: " + String(x_plus));
-        Serial.println("New Y plus: " + String(y_plus));
-        Serial.println("New Z plus: " + String(z_plus));
-        Serial.println("New W plus: " + String(w_plus));
+        // Serial.println("New X plus: " + String(x_plus));
+        // Serial.println("New Y plus: " + String(y_plus));
+        // Serial.println("New Z plus: " + String(z_plus));
+        // Serial.println("New W plus: " + String(w_plus));
     }
     void axis_page_setup_speed_parameter(int xspeed, int yspeed, int zspeed, int wspeed)
     {
@@ -343,10 +343,10 @@ public:
         y_speed = yspeed;
         z_speed = zspeed;
         w_speed = wspeed;
-        Serial.println("New X speed: " + String(x_speed));
-        Serial.println("New Y speed: " + String(y_speed));
-        Serial.println("New Z speed: " + String(z_speed));
-        Serial.println("New W speed: " + String(w_speed));
+        // Serial.println("New X speed: " + String(x_speed));
+        // Serial.println("New Y speed: " + String(y_speed));
+        // Serial.println("New Z speed: " + String(z_speed));
+        // Serial.println("New W speed: " + String(w_speed));
     }
     void axis_page_setup_acc_parameter(int xacc, int yacc, int zacc, int wacc)
     {
@@ -355,10 +355,10 @@ public:
         y_acceleration = yacc;
         z_acceleration = zacc;
         w_acceleration = wacc;
-        Serial.println("New X acc: " + String(x_acceleration));
-        Serial.println("New Y acc: " + String(y_acceleration));
-        Serial.println("New Z acc: " + String(z_acceleration));
-        Serial.println("New W acc: " + String(w_acceleration));
+        // Serial.println("New X acc: " + String(x_acceleration));
+        // Serial.println("New Y acc: " + String(y_acceleration));
+        // Serial.println("New Z acc: " + String(z_acceleration));
+        // Serial.println("New W acc: " + String(w_acceleration));
     }
 
     void eeprom_read_axis_parameter()
@@ -461,14 +461,14 @@ public:
     {
         function_log();
         eeprom_put_w_needle_table_status();
-        Serial.println(w_needle_table_status_flag ? "Put w_flag: true" : "Put w_flag: false");
+        // Serial.println(w_needle_table_status_flag ? "Put w_flag: true" : "Put w_flag: false");
     }
 
     void eeprom_get_w_status()
     {
         function_log();
         eeprom_get_w_needle_table_status();
-        Serial.println(w_needle_table_status_flag ? "Get w_flag: true" : "Get w_flag: false");
+        // Serial.println(w_needle_table_status_flag ? "Get w_flag: true" : "Get w_flag: false");
     }
 
     int eeprom_read_position_parameters(char axis)
@@ -545,7 +545,7 @@ public:
         return 0;
         EEPROM.end();
     }
-
+    // save specific parameter
     void eeprom_write_specific_speed_parameters(char axis)
     {
         function_log();
@@ -572,22 +572,152 @@ public:
         {
         case 'x':
             x_speed = value;
-            Serial.println("New X speed: " + String(x_speed));
+            // Serial.println("New X speed: " + String(x_speed));
             break;
         case 'y':
             y_speed = value;
-            Serial.println("New Y speed: " + String(y_speed));
+            // Serial.println("New Y speed: " + String(y_speed));
             break;
         case 'z':
             z_speed = value;
-            Serial.println("New Z speed: " + String(z_speed));
+            // Serial.println("New Z speed: " + String(z_speed));
             break;
         case 'w':
             w_speed = value;
-            Serial.println("New W speed: " + String(w_speed));
+            // Serial.println("New W speed: " + String(w_speed));
             break;
         }
     }
+    
+    void eeprom_write_specific_accel_parameters(char axis)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            eeprom_write_acceleration_parameter('x', x_acceleration_addr);
+            break;
+        case 'y':
+            eeprom_write_acceleration_parameter('y', y_acceleration_addr);
+            break;
+        case 'z':
+            eeprom_write_acceleration_parameter('z', z_acceleration_addr);
+            break;
+        case 'w':
+            eeprom_write_acceleration_parameter('w', w_acceleration_addr);
+            break;
+        }
+    }
+    void axis_page_setup_specific_accel_parameter(char axis, int value)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            x_acceleration = value;
+            // Serial.println("New X accel: " + String(x_acceleration));
+            break;
+        case 'y':
+            y_acceleration = value;
+            // Serial.println("New Y accel: " + String(y_acceleration));
+            break;
+        case 'z':
+            z_acceleration = value;
+            // Serial.println("New Z accel: " + String(z_acceleration));
+            break;
+        case 'w':
+            w_acceleration = value;
+            // Serial.println("New W accel: " + String(w_acceleration));
+            break;
+        }
+    }
+    
+    void eeprom_write_specific_offset_parameters(char axis)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            eeprom_write_offset_parameter('x', x_offset_addr);
+            break;
+        case 'y':
+            eeprom_write_offset_parameter('y', y_offset_addr);
+            break;
+        case 'z':
+            eeprom_write_offset_parameter('z', z_offset_addr);
+            break;
+        case 'w':
+            eeprom_write_offset_parameter('w', w_offset_addr);
+            break;
+        }
+    }
+    void axis_page_setup_specific_offset_parameter(char axis, int value)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            x_offset = value;
+            // Serial.println("New X offset: " + String(x_offset));
+            break;
+        case 'y':
+            y_offset = value;
+            // Serial.println("New Y offset: " + String(y_offset));
+            break;
+        case 'z':
+            z_offset = value;
+            // Serial.println("New Z offset: " + String(z_offset));
+            break;
+        case 'w':
+            w_offset = value;
+            // Serial.println("New W offset: " + String(w_offset));
+            break;
+        }
+    }
+    
+    void eeprom_write_specific_plus_parameters(char axis)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            eeprom_write_plus_parameter('x', x_plus_addr);
+            break;
+        case 'y':
+            eeprom_write_plus_parameter('y', y_plus_addr);
+            break;
+        case 'z':
+            eeprom_write_plus_parameter('z', z_plus_addr);
+            break;
+        case 'w':
+            eeprom_write_plus_parameter('w', w_plus_addr);
+            break;
+        }
+    }
+    void axis_page_setup_specific_plus_parameter(char axis, int value)
+    {
+        function_log();
+        switch (axis)
+        {
+        case 'x':
+            x_plus = value;
+            // Serial.println("New X plus: " + String(x_plus));
+            break;
+        case 'y':
+            y_plus = value;
+            // Serial.println("New Y plus: " + String(y_plus));
+            break;
+        case 'z':
+            z_plus = value;
+            // Serial.println("New Z plus: " + String(z_plus));
+            break;
+        case 'w':
+            w_plus = value;
+            // Serial.println("New W plus: " + String(w_plus));
+            break;
+        }
+    }
+    
 };
 
 #endif

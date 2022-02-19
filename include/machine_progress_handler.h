@@ -20,12 +20,12 @@ public:
   const char *plus_array[4] = {"plusx", "plusy", "plusz", "plusw"};
   const char *speed_array[4] = {"speedx", "speedy", "speedz", "speedw"};
   const char *accel_array[4] = {"accelx", "accely", "accelz", "accelw"};
-  const char *connection_array[3] = {"localip", "remoteip","localport"};
+  const char *connection_array[3] = {"localip", "remoteip", "port"};
 
   const char *slot_array[40] = {"a1", "a2", "a3", "a4", "a5", "b1", "b2", "b3", "b4", "b5", "c1", "c2", "c3", "c4", "c5", "d1", "d2", "d3", "d4", "d5", "e1", "e2", "e3", "e4", "e5", "f1", "f2", "f3", "f4", "f5", "g1", "g2", "g3", "g4", "g5", "h1", "h2", "h3", "h4", "h5"};
 
   int character_count;
-int c_character_count;
+  int c_character_count;
   char parameter_name[10];
   char parameter_value[10];
 
@@ -35,7 +35,7 @@ int c_character_count;
   int wresolution = 200;
 
   int droper_position[3] = {334, 346, 61}; //{x,y,z}
-  int parking_pos[3] = {334, 100, 50}; //{x,y,z}
+  int parking_pos[3] = {334, 100, 50};     //{x,y,z}
   bool park;
 
   bool init_flag = true;
@@ -151,6 +151,7 @@ int c_character_count;
       nextion.nex_set_vis("b18", 1);
     }
   }
+
   void nx_save_axis_page_offset()
   {
     function_log();
@@ -171,6 +172,19 @@ int c_character_count;
     machine_axis_page.axis_page_setup_offset_parameter(x_offset, y_offset, z_offset, w_offset);
     machine_axis_page.eeprom_write_offset_parameters();
     nextion.nex_send_message("Saved successfully");
+  }
+  bool buffer_save_axis_page_specific_offset(char axis, int value)
+  {
+    function_log();
+    if (value < 0)
+    {
+      nextion.nex_send_message("Invalid data");
+      return false;
+    }
+    machine_axis_page.axis_page_setup_specific_offset_parameter(axis, value);
+    machine_axis_page.eeprom_write_specific_offset_parameters(axis);
+    nextion.nex_send_message("Saved successfully");
+    return true;
   }
   void nx_save_axis_page_plus()
   {
@@ -193,6 +207,19 @@ int c_character_count;
     machine_axis_page.eeprom_write_plus_parameters();
     nextion.nex_send_message("Saved successfully");
   }
+  bool buffer_save_axis_page_specific_plus(char axis, int value)
+  {
+    function_log();
+    if (value < 0)
+    {
+      nextion.nex_send_message("Invalid data");
+      return false;
+    }
+    machine_axis_page.axis_page_setup_specific_plus_parameter(axis, value);
+    machine_axis_page.eeprom_write_specific_plus_parameters(axis);
+    nextion.nex_send_message("Saved successfully");
+    return true;
+  }
   void nx_save_axis_page_speed()
   {
     function_log();
@@ -214,17 +241,18 @@ int c_character_count;
     machine_axis_page.eeprom_write_speed_parameters();
     nextion.nex_send_message("Saved successfully");
   }
-  void nx_save_axis_page_specific_speed(char axis, int value)
+  bool buffer_save_axis_page_specific_speed(char axis, int value)
   {
     function_log();
     if (value < 0)
     {
       nextion.nex_send_message("Invalid data");
-      return;
+      return false;
     }
     machine_axis_page.axis_page_setup_specific_speed_parameter(axis, value);
     machine_axis_page.eeprom_write_specific_speed_parameters(axis);
     nextion.nex_send_message("Saved successfully");
+    return true;
   }
   void nx_save_axis_page_acc()
   {
@@ -246,6 +274,19 @@ int c_character_count;
     machine_axis_page.axis_page_setup_acc_parameter(x_acc, y_acc, z_acc, w_acc);
     machine_axis_page.eeprom_write_acceleration_parameters();
     nextion.nex_send_message("Saved successfully");
+  }
+  bool buffer_save_axis_page_specific_accel(char axis, int value)
+  {
+    function_log();
+    if (value < 0)
+    {
+      nextion.nex_send_message("Invalid data");
+      return false;
+    }
+    machine_axis_page.axis_page_setup_specific_accel_parameter(axis, value);
+    machine_axis_page.eeprom_write_specific_accel_parameters(axis);
+    nextion.nex_send_message("Saved successfully");
+    return true;
   }
   // CONNECTION PAGE
   void nx_update_connection_page()

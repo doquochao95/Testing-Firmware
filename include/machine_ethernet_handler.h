@@ -142,9 +142,9 @@ public:
         eeprom_read_local_ip(eeprom_local_ip_addr);
         eeprom_read_remote_ip(eeprom_remote_ip_addr);
         eeprom_read_port(eeprom_port_addr);
-        Serial.println("Read RemoteIP: " + String(remote_ip_str));
-        Serial.println("Read LocalIP: " + String(local_ip_str));
-        Serial.println("Read Port : " + String(localPort));
+        // Serial.println("Read RemoteIP: " + String(remote_ip_str));
+        // Serial.println("Read LocalIP: " + String(local_ip_str));
+        // Serial.println("Read Port : " + String(localPort));
         set_ipaddress();
     }
     void eeprom_save_MAC()
