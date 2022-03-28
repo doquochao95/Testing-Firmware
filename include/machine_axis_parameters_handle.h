@@ -378,6 +378,10 @@ public:
         eeprom_read_offset_parameter('y', y_offset_addr);
         eeprom_read_offset_parameter('z', z_offset_addr);
         eeprom_read_offset_parameter('w', w_offset_addr);
+        Serial.println("New X offset:" + String(x_offset));
+        Serial.println("New Y offset:" + String(y_offset));
+        Serial.println("New Z offset:" + String(z_offset));
+        Serial.println("New W offset:" + String(w_offset));
     }
     void eeprom_write_offset_parameters()
     {

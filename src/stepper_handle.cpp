@@ -50,16 +50,16 @@ void motor_set_acc_init()
   int accw = machine.machine_axis_page.eeprom_get_acc_parameter('w');
 
   stepperX.setAcceleration(accx * 30); // ?Step/s2
-  Serial.println("Accel X: " + String(accx));
+  // Serial.println("Accel X: " + String(accx));
 
   stepperY.setAcceleration(accy * 30); // ?Step/s2
-  Serial.println("Accel Y: " + String(accy));
+  // Serial.println("Accel Y: " + String(accy));
 
   stepperZ.setAcceleration(accz * 10); // ?Step/s2
-  Serial.println("Accel Z: " + String(accz));
+  // Serial.println("Accel Z: " + String(accz));
 
   stepperW.setAcceleration(accw * 10); // ?Step/s2
-  Serial.println("Accel W: " + String(accw));
+  // Serial.println("Accel W: " + String(accw));
 }
 
 void motor_forward(char axis, int value)
@@ -82,7 +82,7 @@ void motor_forward(char axis, int value)
   {
     if (machine.init_flag == true) // First opening
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
       // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -99,7 +99,7 @@ void motor_forward(char axis, int value)
     }
     if (machine.init_flag == false) // Next openings
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
       // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -166,7 +166,7 @@ void motor_forward(char axis, int value)
   {
     if (machine.init_flag == true) // First opening
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
       // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -183,7 +183,7 @@ void motor_forward(char axis, int value)
     }
     if (machine.init_flag == false) // Next openings
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
       // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -257,7 +257,7 @@ void motor_forward(char axis, int value)
     {
       if (machine.init_flag == true) // First opening
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
         // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -274,7 +274,7 @@ void motor_forward(char axis, int value)
       }
       if (machine.init_flag == false) // Next openings
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
         // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -370,7 +370,7 @@ void motor_back(char axis, int value)
     {
       if (machine.init_flag == true) // First opening
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
         // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -387,7 +387,7 @@ void motor_back(char axis, int value)
       }
       if (machine.init_flag == false) // Next openings
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
         // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -462,7 +462,7 @@ void motor_back(char axis, int value)
     {
       if (machine.init_flag == true) // First opening
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
         // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -479,7 +479,7 @@ void motor_back(char axis, int value)
       }
       if (machine.init_flag == false) // Next openings
       {
-        Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+        // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
         // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
         // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
         // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -548,7 +548,7 @@ void motor_back(char axis, int value)
 
     if (machine.init_flag == true) // First opening
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println("Funtion: " + String(__func__) + " Last posx: " + String(last_posx) + " Last posy: " + String(last_posy) + " Last posz: " + String(last_posz));
       // Serial.println("Funtion: " + String(__func__) + " machine.machine_axis_page.xposition: " + String(machine.machine_axis_page.xposition) + " machine.machine_axis_page.yposition: " + String(machine.machine_axis_page.yposition) + " machine.machine_axis_page.zposition: " + String(machine.machine_axis_page.zposition));
@@ -565,7 +565,7 @@ void motor_back(char axis, int value)
     }
     if (machine.init_flag == false) // Next openings
     {
-      Serial.println("Axis: " + String(axis) + " Value: " + String(value));
+      // Serial.println("Axis: " + String(axis) + " Value: " + String(value));
       // Serial.println(machine.init_flag ? "machine.init_flag: true" : "machine.init_flag: false");
       // Serial.println(press_flagX ? "press_flagX: true" : "press_flagX: false");
       // Serial.println(press_flagY ? "press_flagY: true" : "press_flagY: false");
@@ -634,44 +634,52 @@ void motor_back(char axis, int value)
   stepperZ.runToPosition();
 }
 
-void motor_W_open()
-{
-  function_log();
-  stepperW.moveTo(stepperW.currentPosition() - machine.wresolution * 100);
-  nextions.nex_set_vis("b31", 0);
-  while (1)
-  {
-    if (digitalRead(OvertravelW1) == HIGH)
-    {
-      stepperW.stop();
-      stepperW.setCurrentPosition(0);
-      break;
-    }
-    stepperW.run();
-  }
-  machine.machine_axis_page.set_w_status(true);
-  machine.machine_axis_page.eeprom_put_w_status();
-  machine.nx_set_w_needle_table_button_status();
-}
-void motor_W_close()
-{
-  function_log();
-  stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * 100);
-  nextions.nex_set_vis("b31", 0);
-  while (1)
-  {
-    if (digitalRead(OvertravelW2) == HIGH)
-    {
-      stepperW.stop();
-      stepperW.setCurrentPosition(0);
-      break;
-    }
-    stepperW.run();
-  }
-  machine.machine_axis_page.set_w_status(false);
-  machine.machine_axis_page.eeprom_put_w_status();
-  machine.nx_set_w_needle_table_button_status();
-}
+// void motor_W_open()
+// {
+//   function_log();
+//   stepperW.moveTo(stepperW.currentPosition() - machine.wresolution * machine.machine_axis_page.w_offset);
+//   Serial.println(machine.machine_axis_page.x_offset);
+//   Serial.println(machine.machine_axis_page.y_offset);
+//   Serial.println(machine.machine_axis_page.w_offset);
+
+//   nextions.nex_set_vis("b31", 0);
+//   while (1)
+//   {
+//     if (digitalRead(OvertravelW1) == HIGH)
+//     {
+//       stepperW.stop();
+//       stepperW.setCurrentPosition(0);
+//       break;
+//     }
+//     stepperW.run();
+//   }
+//   machine.machine_axis_page.set_w_status(true);
+//   machine.machine_axis_page.eeprom_put_w_status();
+//   machine.nx_set_w_needle_table_button_status();
+// }
+// void motor_W_close()
+// {
+//   function_log();
+//   stepperW.moveTo(stepperW.currentPosition() + machine.wresolution * machine.machine_axis_page.w_offset);
+//   Serial.println(machine.machine_axis_page.x_offset);
+//   Serial.println(machine.machine_axis_page.y_offset);
+//   Serial.println(machine.machine_axis_page.w_offset);
+
+//   nextions.nex_set_vis("b31", 0);
+//   while (1)
+//   {
+//     if (digitalRead(OvertravelW2) == HIGH)
+//     {
+//       stepperW.stop();
+//       stepperW.setCurrentPosition(0);
+//       break;
+//     }
+//     stepperW.run();
+//   }
+//   machine.machine_axis_page.set_w_status(false);
+//   machine.machine_axis_page.eeprom_put_w_status();
+//   machine.nx_set_w_needle_table_button_status();
+// }
 int get_current_position(char axis)
 {
   function_log();

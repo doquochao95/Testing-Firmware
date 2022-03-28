@@ -211,22 +211,22 @@ public:
         Serial.println("New Port: " + String(localPort));
     }
 
-    void set_message (String msg)
+    void set_message(String msg)
     {
         function_log();
         message = msg;
     }
-    void set_parameter (String para)
+    void set_parameter(String para)
     {
         function_log();
         parameter = para;
     }
-    void set_parameter_value (int val )
+    void set_parameter_value(int val)
     {
         function_log();
         parameter_value = String(val);
     }
-    void set_parameter_value (String val )
+    void set_parameter_value(String val)
     {
         function_log();
         parameter_value = val;
@@ -256,7 +256,7 @@ public:
         uint8_t exception;
         do
         {
-            nextion.nex_send_message("Connecting");
+            // nextion.nex_send_message("Connecting");
             Serial.println("Device MAC:");
             for (size_t i = 0; i < sizeof(ethernet_parameters.MAC); i++)
             {
@@ -275,15 +275,15 @@ public:
             switch (exception)
             {
             case 0:
-                Serial.println("Module not found.");
+                // Serial.println("Module not found.");
                 nextion.nex_send_message("Module not found");
                 break;
             case 1:
-                Serial.println("Cable disconnected");
+                // Serial.println("Cable disconnected");
                 nextion.nex_send_message("Cable disconnected");
                 break;
             case 2:
-                Serial.println("Connection Success");
+                // Serial.println("Connection Success");
                 nextion.nex_send_message("Connection Success");
                 break;
             }
@@ -378,6 +378,7 @@ public:
         Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
         Udp.print("<" + ethernet_parameters.parameter + ":" + ethernet_parameters.parameter_value + ">");
         Udp.endPacket();
+        Serial.println("<" + ethernet_parameters.parameter + ":" + ethernet_parameters.parameter_value + ">");
     }
     void udp_reply_msg()
     {
@@ -385,6 +386,7 @@ public:
         Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
         Udp.print("<msg:" + ethernet_parameters.message + ">");
         Udp.endPacket();
+        Serial.println("<msg:" + ethernet_parameters.message + ">");
     }
 };
 #endif

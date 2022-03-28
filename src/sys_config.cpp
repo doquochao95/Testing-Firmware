@@ -24,6 +24,18 @@ void start_up()
   motor_set_acc_init();
   delay(500);
   nextion.nex_goto_page("HOME");
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter("buildingname");
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter_value(machine_progress.machine_about_page.building_name);
+  machine_progress.machine_connection_page.udp_reply_para();
+  delay(500);
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter("devicename");
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter_value(machine_progress.machine_about_page.device_name);
+  machine_progress.machine_connection_page.udp_reply_para();
+  delay(500);
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter("deviceid");
+  machine_progress.machine_connection_page.ethernet_parameters.set_parameter_value(String(machine_progress.machine_about_page.device_id));
+  machine_progress.machine_connection_page.udp_reply_para();
+  delay(500);
   machine_progress.machine_connection_page.ethernet_parameters.set_message("setting_success");
   machine_progress.machine_connection_page.udp_reply_msg();
 }
@@ -32,7 +44,7 @@ void io_init()
   Serial.begin(115200);
   while (!Serial)
     ;
-  Serial.println("Initializes system IO");
+  // Serial.println("Initializes system IO");
   pinMode(HomeX, INPUT);
   pinMode(HomeY, INPUT);
   pinMode(HomeZ, INPUT);
@@ -65,12 +77,12 @@ void io_init()
 }
 void local_data_init()
 {
-  Serial.println("Initialing local parameters");
+  // Serial.println("Initialing local parameters");
   machine_progress.init();
 }
 void ethernet_init()
 {
-  Serial.println("Initializing ethernet module");
+  // Serial.println("Initializing ethernet module");
   nextion.nex_send_message("Setting up ethernet module...");
   // initialize ethernet module
   machine_progress.machine_connection_page.setting_up_ethernet_module();
@@ -317,35 +329,35 @@ void sensors_checking()
 {
   if (digitalRead(OvertravelW1) == HIGH || digitalRead(OvertravelW2) == HIGH)
   {
-    nextion.nex_set_vis("b31", 1);
+    nextion.nex_set_vis("b43", 1);
   }
   else
   {
-    nextion.nex_set_vis("b31", 0);
+    nextion.nex_set_vis("b43", 0);
   }
   if (digitalRead(HomeX) == HIGH)
   {
-    nextion.nex_set_vis("b28", 1);
+    nextion.nex_set_vis("b40", 1);
   }
   else
   {
-    nextion.nex_set_vis("b28", 0);
+    nextion.nex_set_vis("b40", 0);
   }
   if (digitalRead(HomeY) == HIGH)
   {
-    nextion.nex_set_vis("b29", 1);
+    nextion.nex_set_vis("b41", 1);
   }
   else
   {
-    nextion.nex_set_vis("b29", 0);
+    nextion.nex_set_vis("b41", 0);
   }
   if (digitalRead(HomeZ) == HIGH)
   {
-    nextion.nex_set_vis("b30", 1);
+    nextion.nex_set_vis("b42", 1);
   }
   else
   {
-    nextion.nex_set_vis("b30", 0);
+    nextion.nex_set_vis("b42", 0);
   }
 }
 void air_checking()
@@ -411,13 +423,13 @@ void parameter_checking(String name, String n_value)
   const char *index_char;
   index_char = n_value.c_str();
   int value = atoi(index_char);
+  buffer_ethernet_parameter_check(name, n_value);
   buffer_speed_check(name, value);
   buffer_accel_check(name, value);
   buffer_offset_check(name, value);
   buffer_plus_check(name, value);
   picking_check(name, value);
   funtions_check(name, value);
-  buffer_ethernet_parameter_check(name, n_value);
 }
 
 void buffer_speed_check(String name, int value)
@@ -571,6 +583,10 @@ void picking_check(String position, int needleqty)
         z_scale++;
       }
     }
+    Serial.println(x_scale);
+    Serial.println(y_scale);
+    Serial.println(z_scale);
+
     homing_machine_before_pick();
     delay(500);
     // Move XY to picking position and Z to prepairing posittion
@@ -611,7 +627,7 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("higher_needle_qty");
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("higher_needle_qty_"+position);
         complete_status = false;
         break;
       }
@@ -652,7 +668,7 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty");
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty_"+position);
         complete_status = false;
       }
       else // needle is sucked
@@ -937,6 +953,7 @@ void picking_check(String position, int needleqty)
     machine_progress.machine_connection_page.ethernet_parameters.set_parameter("status");
     machine_progress.machine_connection_page.ethernet_parameters.set_parameter_value(complete_status);
     machine_progress.machine_connection_page.udp_reply_para();
+    delay(1000);
     machine_progress.machine_connection_page.udp_reply_msg();
   }
 }
@@ -1056,18 +1073,16 @@ void buffer_ethernet_parameter_check(String name, String value)
   {
     if (strcmp(machine_progress.connection_array[i], name.c_str()) == 0)
     {
-      if (name == machine_progress.connection_array[0])
+      if (name == "localip")
       {
-        char *c_value;
-        strcpy(c_value, value.c_str());
+        char *c_value = value.c_str();
         machine_progress.machine_connection_page.ethernet_parameters.setup_ethernet_local_ip(c_value);
         machine_progress.machine_connection_page.ethernet_parameters.eeprom_save_ethernet_local_ip();
         ethernet_init();
       }
       else if (name == machine_progress.connection_array[1])
       {
-        char *c_value;
-        strcpy(c_value, value.c_str());
+        char *c_value = value.c_str();
         machine_progress.machine_connection_page.ethernet_parameters.setup_ethernet_remote_ip(c_value);
         machine_progress.machine_connection_page.ethernet_parameters.eeprom_save_ethernet_remote_ip();
         ethernet_init();
@@ -1085,4 +1100,50 @@ void buffer_ethernet_parameter_check(String name, String value)
       Serial.println(value);
     }
   }
+}
+void motor_W_open()
+{
+  function_log();
+  stepperW.moveTo(stepperW.currentPosition() - machine_progress.wresolution * machine_progress.machine_axis_page.w_offset);
+  Serial.println(machine_progress.machine_axis_page.x_offset);
+  Serial.println(machine_progress.machine_axis_page.y_offset);
+  Serial.println(machine_progress.machine_axis_page.w_offset);
+
+  nextion.nex_set_vis("b31", 0);
+  while (1)
+  {
+    if (digitalRead(OvertravelW1) == HIGH)
+    {
+      stepperW.stop();
+      stepperW.setCurrentPosition(0);
+      break;
+    }
+    stepperW.run();
+  }
+  machine_progress.machine_axis_page.set_w_status(true);
+  machine_progress.machine_axis_page.eeprom_put_w_status();
+  machine_progress.nx_set_w_needle_table_button_status();
+}
+void motor_W_close()
+{
+  function_log();
+  stepperW.moveTo(stepperW.currentPosition() + machine_progress.wresolution * machine_progress.machine_axis_page.w_offset);
+  Serial.println(machine_progress.machine_axis_page.x_offset);
+  Serial.println(machine_progress.machine_axis_page.y_offset);
+  Serial.println(machine_progress.machine_axis_page.w_offset);
+
+  nextion.nex_set_vis("b31", 0);
+  while (1)
+  {
+    if (digitalRead(OvertravelW2) == HIGH)
+    {
+      stepperW.stop();
+      stepperW.setCurrentPosition(0);
+      break;
+    }
+    stepperW.run();
+  }
+  machine_progress.machine_axis_page.set_w_status(false);
+  machine_progress.machine_axis_page.eeprom_put_w_status();
+  machine_progress.nx_set_w_needle_table_button_status();
 }
