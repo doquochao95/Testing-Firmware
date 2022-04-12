@@ -627,7 +627,7 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("higher_needle_qty_"+position);
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("higher_needle_qty_" + position);
         complete_status = false;
         break;
       }
@@ -668,7 +668,7 @@ void picking_check(String position, int needleqty)
         }
         stepperX.setCurrentPosition(0);
         stepperY.setCurrentPosition(0);
-        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty_"+position);
+        machine_progress.machine_connection_page.ethernet_parameters.set_message("needle_stock_empty_" + position);
         complete_status = false;
       }
       else // needle is sucked
@@ -747,7 +747,7 @@ void picking_check(String position, int needleqty)
                 if (int_camera == 0)
                 {
                   count++;
-                  if (count == 100)
+                  if (count == 200) // camera waiting timer
                   {
                     camera = false;
                     break;
@@ -963,7 +963,6 @@ void funtions_check(String name, int value)
   {
     machine_progress.resetFunc();
   }
-
   if (name == "led1")
   {
     if (value == 1)
@@ -1022,6 +1021,24 @@ void funtions_check(String name, int value)
     else
     {
       return;
+    }
+  }
+  if (name == "checkw")
+  {
+    if (digitalRead(OvertravelW2) == HIGH && digitalRead(OvertravelW1) == LOW)
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("table_closed");
+      machine_progress.machine_connection_page.udp_reply_msg();
+    }
+    else if (digitalRead(OvertravelW2) == LOW && digitalRead(OvertravelW1) == HIGH)
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("table_opened");
+      machine_progress.machine_connection_page.udp_reply_msg();
+    }
+    else
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("table_error");
+      machine_progress.machine_connection_page.udp_reply_msg();
     }
   }
 }
@@ -1105,45 +1122,61 @@ void motor_W_open()
 {
   function_log();
   stepperW.moveTo(stepperW.currentPosition() - machine_progress.wresolution * machine_progress.machine_axis_page.w_offset);
-  Serial.println(machine_progress.machine_axis_page.x_offset);
-  Serial.println(machine_progress.machine_axis_page.y_offset);
-  Serial.println(machine_progress.machine_axis_page.w_offset);
 
   nextion.nex_set_vis("b31", 0);
+  int count = 0;
   while (1)
   {
+    Serial.println(count);
+    if (count == 30000)
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("open_fail");
+      machine_progress.machine_axis_page.set_w_status(false);
+      break;
+    }
     if (digitalRead(OvertravelW1) == HIGH)
     {
       stepperW.stop();
       stepperW.setCurrentPosition(0);
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("open_success");
+      machine_progress.machine_axis_page.set_w_status(true);
       break;
     }
+    count++;
     stepperW.run();
   }
-  machine_progress.machine_axis_page.set_w_status(true);
   machine_progress.machine_axis_page.eeprom_put_w_status();
   machine_progress.nx_set_w_needle_table_button_status();
+  machine_progress.machine_connection_page.udp_reply_msg();
 }
 void motor_W_close()
 {
   function_log();
   stepperW.moveTo(stepperW.currentPosition() + machine_progress.wresolution * machine_progress.machine_axis_page.w_offset);
-  Serial.println(machine_progress.machine_axis_page.x_offset);
-  Serial.println(machine_progress.machine_axis_page.y_offset);
-  Serial.println(machine_progress.machine_axis_page.w_offset);
 
   nextion.nex_set_vis("b31", 0);
+  int count = 0;
   while (1)
   {
+    Serial.println(count);
+    if (count == 30000)
+    {
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("close_fail");
+      machine_progress.machine_axis_page.set_w_status(true);
+      break;
+    }
     if (digitalRead(OvertravelW2) == HIGH)
     {
       stepperW.stop();
       stepperW.setCurrentPosition(0);
+      machine_progress.machine_connection_page.ethernet_parameters.set_message("close_success");
+      machine_progress.machine_axis_page.set_w_status(false);
       break;
     }
+    count++;
     stepperW.run();
   }
-  machine_progress.machine_axis_page.set_w_status(false);
   machine_progress.machine_axis_page.eeprom_put_w_status();
   machine_progress.nx_set_w_needle_table_button_status();
+  machine_progress.machine_connection_page.udp_reply_msg();
 }
