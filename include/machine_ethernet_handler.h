@@ -109,6 +109,8 @@ public:
 
     char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
     char c_packetBuffer[UDP_TX_PACKET_MAX_SIZE];
+    char t_packetBuffer[UDP_TX_PACKET_MAX_SIZE];
+
     char ReplyBuffer[UDP_TX_PACKET_MAX_SIZE];
     String message;
 
@@ -124,7 +126,6 @@ public:
     }
     void set_ipaddress()
     {
-        function_log();
         local_ip.fromString(local_ip_str);
         remote_ip.fromString(remote_ip_str);
     }
@@ -137,7 +138,6 @@ public:
     }
     void eeprom_read_ethernet_parameters()
     {
-        function_log();
         eeprom_read_MAC(eeprom_mac_addr);
         eeprom_read_local_ip(eeprom_local_ip_addr);
         eeprom_read_remote_ip(eeprom_remote_ip_addr);
@@ -149,56 +149,47 @@ public:
     }
     void eeprom_save_MAC()
     {
-        function_log();
         eeprom_save_MAC(eeprom_mac_addr);
     }
     void eeprom_save_ethernet_parameters()
     {
-        function_log();
         eeprom_save_ethernet_local_ip();
         eeprom_save_ethernet_remote_ip();
         eeprom_save_ethernet_port();
     }
     void eeprom_save_ethernet_local_ip()
     {
-        function_log();
         eeprom_save_local_ip(eeprom_local_ip_addr);
     }
     void eeprom_save_ethernet_remote_ip()
     {
-        function_log();
         eeprom_save_remote_ip(eeprom_remote_ip_addr);
     }
     void eeprom_save_ethernet_port()
     {
-        function_log();
         eeprom_save_port(eeprom_port_addr);
     }
 
     void setup_machine_mac(uint8_t *mac)
     {
-        function_log();
         memccpy(MAC, mac, 0, sizeof(MAC));
         printf("New MAC: %sS", MAC);
     }
     void setup_ethernet_parameters(char *RemoteIP, char *LocalIP, uint16_t port)
     {
-        function_log();
         setup_ethernet_local_ip(LocalIP);
         setup_ethernet_remote_ip(RemoteIP);
         setup_ethernet_port(port);
     }
-    void setup_ethernet_local_ip(char *LocalIP)
+    void setup_ethernet_local_ip(const char *LocalIP)
     {
-        function_log();
         memccpy(local_ip_str, LocalIP, 0, sizeof(local_ip_str));
         local_ip.fromString(local_ip_str);
         Serial.print("New LocalIP: ");
         Serial.println(local_ip);
     }
-    void setup_ethernet_remote_ip(char *RemoteIP)
+    void setup_ethernet_remote_ip(const char *RemoteIP)
     {
-        function_log();
         memccpy(remote_ip_str, RemoteIP, 0, sizeof(remote_ip_str));
         remote_ip.fromString(remote_ip_str);
         Serial.print("New RemoteIP: ");
@@ -206,29 +197,24 @@ public:
     }
     void setup_ethernet_port(uint16_t port)
     {
-        function_log();
         localPort = port;
         Serial.println("New Port: " + String(localPort));
     }
 
     void set_message(String msg)
     {
-        function_log();
         message = msg;
     }
     void set_parameter(String para)
     {
-        function_log();
         parameter = para;
     }
     void set_parameter_value(int val)
     {
-        function_log();
         parameter_value = String(val);
     }
     void set_parameter_value(String val)
     {
-        function_log();
         parameter_value = val;
     }
 };
@@ -252,7 +238,6 @@ public:
     }
     void setting_up_ethernet_module()
     {
-        function_log();
         uint8_t exception;
         do
         {
@@ -372,9 +357,32 @@ public:
             Serial.println("c_Buffer: " + String(ethernet_parameters.c_packetBuffer));
         }
     }
+    void udp_t_checking()
+    {
+        int packetSize = Udp.parsePacket();
+        if (packetSize)
+        {
+            Serial.print("Received packet of size ");
+            Serial.println(packetSize);
+            Serial.print("From ");
+            IPAddress remote = Udp.remoteIP();
+            for (int i = 0; i < 4; i++)
+            {
+                Serial.print(remote[i], DEC);
+                if (i < 3)
+                {
+                    Serial.print(".");
+                }
+            }
+            Serial.print(", port ");
+            Serial.println(Udp.remotePort());
+            memset(ethernet_parameters.t_packetBuffer, 0, sizeof(ethernet_parameters.t_packetBuffer));
+            Udp.read(ethernet_parameters.t_packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+            Serial.println("t_Buffer: " + String(ethernet_parameters.t_packetBuffer));
+        }
+    }
     void udp_reply_para()
     {
-        function_log();
         Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
         Udp.print("<" + ethernet_parameters.parameter + ":" + ethernet_parameters.parameter_value + ">");
         Udp.endPacket();
@@ -382,7 +390,6 @@ public:
     }
     void udp_reply_msg()
     {
-        function_log();
         Udp.beginPacket(ethernet_parameters.remote_ip, ethernet_parameters.localPort);
         Udp.print("<msg:" + ethernet_parameters.message + ">");
         Udp.endPacket();

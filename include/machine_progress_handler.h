@@ -23,9 +23,12 @@ public:
   const char *connection_array[3] = {"localip", "remoteip", "port"};
 
   const char *slot_array[40] = {"a1", "a2", "a3", "a4", "a5", "b1", "b2", "b3", "b4", "b5", "c1", "c2", "c3", "c4", "c5", "d1", "d2", "d3", "d4", "d5", "e1", "e2", "e3", "e4", "e5", "f1", "f2", "f3", "f4", "f5", "g1", "g2", "g3", "g4", "g5", "h1", "h2", "h3", "h4", "h5"};
+  const char *last_message;
 
   int character_count;
   int c_character_count;
+  int t_character_count;
+
   char parameter_name[10];
   char parameter_value[10];
 
@@ -34,12 +37,18 @@ public:
   int zresolution = 100;
   int wresolution = 200;
 
+  int limit_range_x = 350; // mm
+  int limit_range_y = 365; // mm
+  int limit_range_z = -70; // mm
+
   int droper_position[3] = {334, 346, 61}; //{x,y,z}
   int parking_pos[3] = {334, 100, 50};     //{x,y,z}
   bool park;
 
   bool init_flag = true;
   bool key_board_flag = false;
+
+  bool overtravel_flag = false;
 
   void (*resetFunc)(void) = 0; // Reset funtion
 
@@ -56,13 +65,13 @@ public:
     if (key_board_flag == false)
     {
       nx_clear_movement_page();
-      nx_axis_page_init();
+      nx_set_xyz_position();
       nx_update_axis_parameters_page();
-      nx_set_w_needle_table_button_status();
+      nx_set_button_status();
     }
     else
     {
-      nx_axis_page_init();
+      nx_set_xyz_position();
       key_board_flag = false;
     }
   }
@@ -97,17 +106,17 @@ public:
     nextion.setNumberProperty("AXIS", "n1.val", machine_axis_page.yposition);
     nextion.setNumberProperty("AXIS", "n2.val", machine_axis_page.zposition);
   }
-  void nx_axis_page_init()
-  {
-    function_log();
-    int last_posX = machine_axis_page.eeprom_read_position_parameters('x');
-    int last_posY = machine_axis_page.eeprom_read_position_parameters('y');
-    int last_posZ = machine_axis_page.eeprom_read_position_parameters('z');
-    // Serial.println("Funtion: " + String(__func__) + " Last position: " + String(last_posX) + " Last position: " + String(last_posY) + " Last position: " + String(last_posZ));
-    nextion.setNumberProperty("AXIS", "n0.val", last_posX);
-    nextion.setNumberProperty("AXIS", "n1.val", last_posY);
-    nextion.setNumberProperty("AXIS", "n2.val", last_posZ);
-  }
+  // void nx_axis_page_init()
+  // {
+  //   function_log();
+  //   // machine_axis_page.xposition = machine_axis_page.eeprom_read_position_parameters('x');
+  //   // machine_axis_page.yposition = machine_axis_page.eeprom_read_position_parameters('y');
+  //   // machine_axis_page.zposition = machine_axis_page.eeprom_read_position_parameters('z');
+  //   // Serial.println("Funtion: " + String(__func__) + " Last position: " + String(last_posX) + " Last position: " + String(last_posY) + " Last position: " + String(last_posZ));
+  //   nextion.setNumberProperty("AXIS", "n0.val", machine_axis_page.xposition);
+  //   nextion.setNumberProperty("AXIS", "n1.val", machine_axis_page.yposition);
+  //   nextion.setNumberProperty("AXIS", "n2.val", machine_axis_page.zposition);
+  // }
   void nx_update_axis_parameters_page()
   {
     function_log();
@@ -134,21 +143,70 @@ public:
       nextion.setNumberProperty("AXIS", "n18.val", machine_axis_page.w_acceleration);
     }
   }
-  void nx_set_w_needle_table_button_status()
+  void nx_set_button_status()
   {
     function_log();
-    machine_axis_page.eeprom_get_w_status();
-    bool status = machine_axis_page.w_needle_table_status_flag;
-    // Serial.println(status ? "W_needle_table_flag: true" : "W_needle_table_flag: false");
-    if (status == false)
+    if (machine_axis_page.w_needle_table_status_flag)
     {
-      nextion.nex_set_vis("b17", 1);
-      nextion.nex_set_vis("b18", 0);
+      nextion.setNumberProperty("bt1.val", 1);
     }
     else
     {
-      nextion.nex_set_vis("b17", 0);
-      nextion.nex_set_vis("b18", 1);
+      nextion.setNumberProperty("bt1.val", 0);
+    }
+
+    if (machine_axis_page.dropper_status_flag)
+    {
+      nextion.setNumberProperty("bt0.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt0.val", 0);
+    }
+
+    if (machine_axis_page.needle_box_status_flag)
+    {
+      nextion.setNumberProperty("bt2.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt2.val", 0);
+    }
+
+    if (machine_axis_page.camcylinder1_status_flag)
+    {
+      nextion.setNumberProperty("bt3.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt3.val", 0);
+    }
+
+    if (machine_axis_page.camcylinder2_status_flag)
+    {
+      nextion.setNumberProperty("bt4.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt4.val", 0);
+    }
+
+    if (machine_axis_page.airsuck_status_flag)
+    {
+      nextion.setNumberProperty("bt5.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt5.val", 0);
+    }
+
+    if (machine_axis_page.airflow_status_flag)
+    {
+      nextion.setNumberProperty("bt6.val", 1);
+    }
+    else
+    {
+      nextion.setNumberProperty("bt6.val", 0);
     }
   }
 
@@ -163,7 +221,6 @@ public:
     y_offset = nextion.getNumberProperty("AXIS", "n4.val");
     z_offset = nextion.getNumberProperty("AXIS", "n5.val");
     w_offset = nextion.getNumberProperty("AXIS", "n6.val");
-    Serial.println(" x_offset: " + String(x_offset) + " y_offset: " + String(y_offset) + " z_offset: " + String(z_offset) + " w_offset: " + String(w_offset));
     if (x_offset < 0 || y_offset < 0 || z_offset < 0 || w_offset < 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -197,7 +254,6 @@ public:
     y_plus = nextion.getNumberProperty("AXIS", "n8.val");
     z_plus = nextion.getNumberProperty("AXIS", "n9.val");
     w_plus = nextion.getNumberProperty("AXIS", "n10.val");
-    Serial.println(" x_plus: " + String(x_plus) + " y_plus: " + String(y_plus) + " z_plus: " + String(z_plus) + " w_plus: " + String(w_plus));
     if (x_plus < 0 || y_plus < 0 || z_plus < 0 || w_plus < 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -231,7 +287,6 @@ public:
     y_speed = nextion.getNumberProperty("AXIS", "n12.val");
     z_speed = nextion.getNumberProperty("AXIS", "n13.val");
     w_speed = nextion.getNumberProperty("AXIS", "n14.val");
-    Serial.println(" x_speed: " + String(x_speed) + " y_speed: " + String(y_speed) + " z_speed: " + String(z_speed) + " w_speed: " + String(w_speed));
     if (x_speed < 0 || y_speed < 0 || z_speed < 0 || w_speed < 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -265,7 +320,6 @@ public:
     y_acc = nextion.getNumberProperty("AXIS", "n16.val");
     z_acc = nextion.getNumberProperty("AXIS", "n17.val");
     w_acc = nextion.getNumberProperty("AXIS", "n18.val");
-    Serial.println(" x_acc: " + String(nextion.getNumberProperty("AXIS", "n15.val")) + " y_acc: " + String(y_acc) + " z_acc: " + String(z_acc) + " w_acc: " + String(w_acc));
     if (x_acc < 0 || y_acc < 0 || z_acc < 0 || w_acc < 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -297,7 +351,6 @@ public:
       nextion.setStringProperty("CONNECTION", "t0.txt", machine_connection_page.ethernet_parameters.remote_ip_str);
       nextion.setStringProperty("CONNECTION", "t1.txt", machine_connection_page.ethernet_parameters.local_ip_str);
       nextion.setNumberProperty("CONNECTION", "n0.val", machine_connection_page.ethernet_parameters.localPort);
-
       const char *props[6] = {"n1.val", "n2.val", "n3.val", "n4.val", "n5.val", "n6.val"};
       for (uint8_t i = 0; i < sizeof(machine_connection_page.ethernet_parameters.MAC); i++)
       {
@@ -345,7 +398,6 @@ public:
     nextion.getStringProperty("CONNECTION", "t0.txt", remoteip, sizeof(remoteip));
     nextion.getStringProperty("CONNECTION", "t1.txt", localip, sizeof(localip));
     localport = nextion.getNumberProperty("CONNECTION", "n0.val");
-    Serial.println("localport: " + String(localport));
     if (strlen(remoteip) == 0 || strlen(localip) == 0 || localport == 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -395,7 +447,6 @@ public:
 
     nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t0.txt", building_name, sizeof(building_name));
-    Serial.println("building_name: " + String(building_name));
     if (strlen(building_name) == 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -412,7 +463,6 @@ public:
     nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t0.txt", buildingname, sizeof(buildingname));
     device_id = nextion.getNumberProperty("ABOUT", "n0.val");
-    Serial.println("device_id: " + String(device_id));
     if (device_id == 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -430,7 +480,6 @@ public:
 
     nextion.nex_send_message("Saving...");
     nextion.getStringProperty("ABOUT", "t1.txt", device_name, sizeof(device_name));
-    Serial.println("device_name: " + String(device_name));
     if (strlen(device_name) == 0)
     {
       nextion.nex_send_message("Invalid data");
@@ -440,17 +489,48 @@ public:
     machine_about_page.eeprom_save_device_name();
     nextion.nex_send_message("Saved successfully");
   }
-  void nx_save_table_led_flag_status(bool value)
+  void ns_set_visable_control_button(int visable_value)
   {
     function_log();
-    machine_about_page.setup_table_led_flag_status(value);
-    machine_about_page.eeprom_put_table_led_flag_status();
+    nextion.nex_set_vis("b0", visable_value);
+    nextion.nex_set_vis("b1", visable_value);
+    nextion.nex_set_vis("b2", visable_value);
+    nextion.nex_set_vis("b3", visable_value);
+    nextion.nex_set_vis("b4", visable_value);
+    nextion.nex_set_vis("b5", visable_value);
+    nextion.nex_set_vis("b6", visable_value);
+    nextion.nex_set_vis("b7", visable_value);
+    nextion.nex_set_vis("b8", visable_value);
+    nextion.nex_set_vis("b9", visable_value);
+    nextion.nex_set_vis("b10", visable_value);
+    nextion.nex_set_vis("b11", visable_value);
   }
-  void nx_save_frame_led_flag_status(bool value)
+  void udp_save_buildingname(String buildingname)
   {
     function_log();
-    machine_about_page.setup_frame_led_flag_status(value);
-    machine_about_page.eeprom_put_frame_led_flag_status();
+    const char *building_name;
+    building_name = buildingname.c_str();
+    machine_about_page.setup_building_name(building_name);
+    machine_about_page.eeprom_save_building_name();
+  }
+  void udp_save_devicename(String devicename)
+  {
+    function_log();
+    const char *device_name;
+    device_name = devicename.c_str();
+    machine_about_page.setup_device_name(device_name);
+    machine_about_page.eeprom_save_device_name();
+  }
+  void udp_save_deviceid(String deviceid)
+  {
+    function_log();
+    const char *index_char;
+    index_char = deviceid.c_str();
+    int device_id = atoi(index_char);
+
+    machine_about_page.setup_device_id(device_id);
+    machine_about_page.eeprom_save_device_id();
+    nextion.nex_send_message("Saved successfully");
   }
 
   String getParameter_fromBuffer(String string, char startSeparator, char endSeparator)

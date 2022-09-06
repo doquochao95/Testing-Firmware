@@ -10,7 +10,7 @@
 // #define function_log(...) Serial.print(("[USER_DEBUG] ----> Func: %s at line: %d\r\n", __func__, __LINE__))
 #define function_log(...) Serial.println("Func: " + String(__func__) + " At line: " + String(__LINE__))
 #endif
-//page 07
+// page 07
 #define NEX_BUT_X_FORWARD_1 0x00
 #define NEX_BUT_X_FORWARD_10 0x01
 #define NEX_BUT_X_BACK_1 0x06
@@ -26,8 +26,7 @@
 #define NEX_BUT_Z_BACK_1 0x10
 #define NEX_BUT_Z_BACK_10 0x11
 
-#define NEX_BUT_W_OPEN 0x17
-#define NEX_BUT_W_CLOSE 0x18
+
 
 #define NEX_BUT_SAVE_OFFSET 0x19
 #define NEX_BUT_SAVE_PLUS 0x20
@@ -49,7 +48,30 @@
 #define NEX_RESET_DEVICE1 0xE3
 
 
-//page 08
+#define NEX_BUT_DROPPER_ON 0xA1
+#define NEX_BUT_DROPPER_OFF 0xA2
+
+#define NEX_BUT_TABLE_ON 0xA3
+#define NEX_BUT_TABLE_OFF 0xA4
+
+#define NEX_BUT_BOX_ON 0xA5
+#define NEX_BUT_BOX_OFF 0xA6
+
+#define NEX_BUT_CAM_CYLINDER1_ON 0xA7
+#define NEX_BUT_CAM_CYLINDER1_OFF 0xA8
+
+#define NEX_BUT_CAM_CYLINDER2_ON 0xB1
+#define NEX_BUT_CAM_CYLINDER2_OFF 0xB2
+
+#define NEX_BUT_AIRSUCK_ON 0xB3
+#define NEX_BUT_AIRSUCK_OFF 0xB4
+
+#define NEX_BUT_AIRFLOW_ON 0xB5
+#define NEX_BUT_AIRFLOW_OFF 0xB6
+
+
+
+// page 08
 #define NEX_CONNECTION_PAGE_INIT 0xD4
 #define NEX_CONNECTION_PAGE_EXIT 0xD5
 #define NX_BUT_SAVE_MAC 0x28
@@ -60,8 +82,7 @@
 
 #define NEX_RESET_DEVICE2 0xE4
 
-
-//page 10
+// page 9
 #define NEX_ABOUT_PAGE_INIT 0xD6
 #define NEX_ABOUT_PAGE_EXIT 0xD7
 #define NX_BUT_SAVE_BUILDING 0x30
@@ -93,8 +114,8 @@
 #define HomeY 27
 #define HomeZ 28
 
-#define OvertravelX1 30
-#define OvertravelX2 31
+#define OvertravelX1 30 // X+
+#define OvertravelX2 31 // X-
 #define OvertravelY1 32
 #define OvertravelY2 33
 
@@ -111,10 +132,11 @@
 #define MachineLED 44
 #define TableLED 45
 #define DropCylinder 46
-#define CameraCylinder 47
+#define RecycleBox 47
 
 #define AirFlowPicker 22
 #define AirSuckPicker 23
- 
+#define CameradDropCylinder1 24
+#define CameradDropCylinder2 25
 
 #endif

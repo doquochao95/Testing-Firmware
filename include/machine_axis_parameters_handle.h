@@ -30,17 +30,14 @@ private:
     int z_acceleration_addr = 0;
     int w_acceleration_addr = 0;
 
-    int x_position_addr = 0;
-    int y_position_addr = 0;
-    int z_position_addr = 0;
-
-    int w_needle_table_status_addr = 0;
+    // int x_position_addr = 0;
+    // int y_position_addr = 0;
+    // int z_position_addr = 0;
 
     eeprom_extension eeprom;
 
     void eeprom_read_offset_parameter(char axis, int addr)
     {
-        function_log();
         EEPROM.begin();
         switch (axis)
         {
@@ -61,7 +58,6 @@ private:
     }
     void eeprom_read_plus_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -82,7 +78,6 @@ private:
     }
     void eeprom_read_speed_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -103,7 +98,6 @@ private:
     }
     void eeprom_read_acceleration_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -144,7 +138,6 @@ private:
     }
     void eeprom_write_plus_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -165,7 +158,6 @@ private:
     }
     void eeprom_write_speed_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -186,7 +178,6 @@ private:
     }
     void eeprom_write_acceleration_parameter(char axis, int addr)
     {
-
         EEPROM.begin();
         switch (axis)
         {
@@ -203,18 +194,6 @@ private:
             eeprom.eeprom_write<int>(w_acceleration, addr);
             break;
         }
-        EEPROM.end();
-    }
-    void eeprom_put_w_needle_table_status()
-    {
-        EEPROM.begin();
-        eeprom.eeprom_put(w_needle_table_status_flag, w_needle_table_status_addr);
-        EEPROM.end();
-    }
-    void eeprom_get_w_needle_table_status()
-    {
-        EEPROM.begin();
-        w_needle_table_status_flag = eeprom.eeprom_get(w_needle_table_status_flag, w_needle_table_status_addr);
         EEPROM.end();
     }
 
@@ -244,38 +223,53 @@ public:
     int zposition = 0;
 
     bool w_needle_table_status_flag = false;
+    bool needle_box_status_flag = false;
+    bool dropper_status_flag = false;
+    bool camcylinder1_status_flag = false;
+    bool camcylinder2_status_flag = false;
+    bool airsuck_status_flag = false;
+    bool airflow_status_flag = false;
 
-    void reset()
-    {
-        xposition = 0;
-        yposition = 0;
-        zposition = 0;
-    }
-    void set_xposition(int value)
+    void set_position_x(int value)
     {
         xposition = value;
     }
-    void set_yposition(int value)
+    void set_position_y(int value)
     {
         yposition = value;
     }
-    void set_zposition(int value)
+    void set_position_z(int value)
     {
         zposition = value;
     }
-    void setup()
-    {
-        x_offset = 0;
-        y_offset = 0;
-        z_offset = 0;
-        w_offset = 0;
-    }
     void set_w_status(bool value)
     {
-        function_log();
         w_needle_table_status_flag = value;
     }
-
+    void set_box_status(bool value)
+    {
+        needle_box_status_flag = value;
+    }
+    void set_dropper_status(bool value)
+    {
+        dropper_status_flag = value;
+    }
+    void set_camcylinder1_status(bool value)
+    {
+        camcylinder1_status_flag = value;
+    }
+    void set_camcylinder2_status(bool value)
+    {
+        camcylinder2_status_flag = value;
+    }
+    void set_airsuck_status(bool value)
+    {
+        airsuck_status_flag = value;
+    }
+    void set_airflow_status(bool value)
+    {
+        airflow_status_flag = value;
+    }
     axis_parameters_def(int storage_address)
     {
         Serial.println("Initializing Axis Page");
@@ -305,11 +299,10 @@ public:
         z_acceleration_addr = y_acceleration_addr + sizeof(y_acceleration);
         w_acceleration_addr = z_acceleration_addr + sizeof(z_acceleration);
 
-        x_position_addr = w_acceleration_addr + sizeof(w_acceleration);
-        y_position_addr = x_position_addr + sizeof(xposition);
-        z_position_addr = y_position_addr + sizeof(yposition);
+        // x_position_addr = w_acceleration_addr + sizeof(w_acceleration);
+        // y_position_addr = x_position_addr + sizeof(xposition);
+        // z_position_addr = y_position_addr + sizeof(yposition);
 
-        w_needle_table_status_addr = z_position_addr + sizeof(zposition);
     }
 
     void axis_page_setup_offset_parameter(int xoffset, int yoffset, int zoffset, int woffset)
@@ -319,10 +312,6 @@ public:
         y_offset = yoffset;
         z_offset = zoffset;
         w_offset = woffset;
-        // Serial.println("New X offset:" + String(x_offset));
-        // Serial.println("New Y offset:" + String(y_offset));
-        // Serial.println("New Z offset:" + String(z_offset));
-        // Serial.println("New W offset:" + String(w_offset));
     }
     void axis_page_setup_plus_parameter(int xplus, int yplus, int zplus, int wplus)
     {
@@ -331,10 +320,6 @@ public:
         y_plus = yplus;
         z_plus = zplus;
         w_plus = wplus;
-        // Serial.println("New X plus: " + String(x_plus));
-        // Serial.println("New Y plus: " + String(y_plus));
-        // Serial.println("New Z plus: " + String(z_plus));
-        // Serial.println("New W plus: " + String(w_plus));
     }
     void axis_page_setup_speed_parameter(int xspeed, int yspeed, int zspeed, int wspeed)
     {
@@ -343,10 +328,6 @@ public:
         y_speed = yspeed;
         z_speed = zspeed;
         w_speed = wspeed;
-        // Serial.println("New X speed: " + String(x_speed));
-        // Serial.println("New Y speed: " + String(y_speed));
-        // Serial.println("New Z speed: " + String(z_speed));
-        // Serial.println("New W speed: " + String(w_speed));
     }
     void axis_page_setup_acc_parameter(int xacc, int yacc, int zacc, int wacc)
     {
@@ -355,20 +336,14 @@ public:
         y_acceleration = yacc;
         z_acceleration = zacc;
         w_acceleration = wacc;
-        // Serial.println("New X acc: " + String(x_acceleration));
-        // Serial.println("New Y acc: " + String(y_acceleration));
-        // Serial.println("New Z acc: " + String(z_acceleration));
-        // Serial.println("New W acc: " + String(w_acceleration));
     }
 
     void eeprom_read_axis_parameter()
     {
-        setup();
         eeprom_read_offset_parameters();
         eeprom_read_plus_parameters();
         eeprom_read_speed_parameters();
         eeprom_read_acceleration_parameters();
-        eeprom_get_w_status();
     }
 
     void eeprom_read_offset_parameters()
@@ -378,10 +353,6 @@ public:
         eeprom_read_offset_parameter('y', y_offset_addr);
         eeprom_read_offset_parameter('z', z_offset_addr);
         eeprom_read_offset_parameter('w', w_offset_addr);
-        Serial.println("New X offset:" + String(x_offset));
-        Serial.println("New Y offset:" + String(y_offset));
-        Serial.println("New Z offset:" + String(z_offset));
-        Serial.println("New W offset:" + String(w_offset));
     }
     void eeprom_write_offset_parameters()
     {
@@ -441,114 +412,48 @@ public:
         eeprom_write_acceleration_parameter('y', y_acceleration_addr);
         eeprom_write_acceleration_parameter('z', z_acceleration_addr);
         eeprom_write_acceleration_parameter('w', w_acceleration_addr);
-    }
+    } 
 
-    void eeprom_write_position_parameter(char axis, int val)
-    {
-        EEPROM.begin();
-        switch (axis)
-        {
-        case 'x':
-            eeprom.eeprom_write<int>(val, x_position_addr);
-            break;
-        case 'y':
-            eeprom.eeprom_write<int>(val, y_position_addr);
-            break;
-        case 'z':
-            eeprom.eeprom_write<int>(val, z_position_addr);
-            break;
-        }
-        EEPROM.end();
-    }
+    // int eeprom_read_position_parameters(char axis)
+    // {
+    //     int pos;
+    //     EEPROM.begin();
+    //     switch (axis)
+    //     {
+    //     case 'x':
+    //         pos = eeprom.eeprom_read<int>(x_position_addr);
+    //         return pos;
+    //         break;
+    //     case 'y':
+    //         pos = eeprom.eeprom_read<int>(y_position_addr);
+    //         return pos;
+    //         break;
+    //     case 'z':
+    //         pos = eeprom.eeprom_read<int>(z_position_addr);
+    //         return pos;
+    //         break;
+    //     }
+    //     return 0;
+    //     EEPROM.end();
+    // }
+    // void eeprom_write_position_parameter(char axis, int val)
+    // {
+    //     EEPROM.begin();
+    //     switch (axis)
+    //     {
+    //     case 'x':
+    //         eeprom.eeprom_write<int>(val, x_position_addr);
+    //         break;
+    //     case 'y':
+    //         eeprom.eeprom_write<int>(val, y_position_addr);
+    //         break;
+    //     case 'z':
+    //         eeprom.eeprom_write<int>(val, z_position_addr);
+    //         break;
+    //     }
+    //     EEPROM.end();
+    // }
 
-    void eeprom_put_w_status()
-    {
-        function_log();
-        eeprom_put_w_needle_table_status();
-        // Serial.println(w_needle_table_status_flag ? "Put w_flag: true" : "Put w_flag: false");
-    }
-
-    void eeprom_get_w_status()
-    {
-        function_log();
-        eeprom_get_w_needle_table_status();
-        // Serial.println(w_needle_table_status_flag ? "Get w_flag: true" : "Get w_flag: false");
-    }
-
-    int eeprom_read_position_parameters(char axis)
-    {
-        int pos;
-        EEPROM.begin();
-        switch (axis)
-        {
-        case 'x':
-            pos = eeprom.eeprom_read<int>(x_position_addr);
-            return pos;
-            break;
-        case 'y':
-            pos = eeprom.eeprom_read<int>(y_position_addr);
-            return pos;
-            break;
-        case 'z':
-            pos = eeprom.eeprom_read<int>(z_position_addr);
-            return pos;
-            break;
-        }
-        return 0;
-        EEPROM.end();
-    }
-    int eeprom_get_speed_parameter(char axis)
-    {
-        int spe;
-        EEPROM.begin();
-        switch (axis)
-        {
-        case 'x':
-            spe = eeprom.eeprom_read<int>(x_speed_addr);
-            return spe;
-            break;
-        case 'y':
-            spe = eeprom.eeprom_read<int>(y_speed_addr);
-            return spe;
-            break;
-        case 'z':
-            spe = eeprom.eeprom_read<int>(z_speed_addr);
-            return spe;
-            break;
-        case 'w':
-            spe = eeprom.eeprom_read<int>(w_speed_addr);
-            return spe;
-            break;
-        }
-        return 0;
-        EEPROM.end();
-    }
-    int eeprom_get_acc_parameter(char axis)
-    {
-        int acc;
-        EEPROM.begin();
-        switch (axis)
-        {
-        case 'x':
-            acc = eeprom.eeprom_read<int>(x_acceleration_addr);
-            return acc;
-            break;
-        case 'y':
-            acc = eeprom.eeprom_read<int>(y_acceleration_addr);
-            return acc;
-            break;
-        case 'z':
-            acc = eeprom.eeprom_read<int>(z_acceleration_addr);
-            return acc;
-            break;
-        case 'w':
-            acc = eeprom.eeprom_read<int>(w_acceleration_addr);
-            return acc;
-            break;
-        }
-        return 0;
-        EEPROM.end();
-    }
     // save specific parameter
     void eeprom_write_specific_speed_parameters(char axis)
     {
@@ -576,23 +481,19 @@ public:
         {
         case 'x':
             x_speed = value;
-            // Serial.println("New X speed: " + String(x_speed));
             break;
         case 'y':
             y_speed = value;
-            // Serial.println("New Y speed: " + String(y_speed));
             break;
         case 'z':
             z_speed = value;
-            // Serial.println("New Z speed: " + String(z_speed));
             break;
         case 'w':
             w_speed = value;
-            // Serial.println("New W speed: " + String(w_speed));
             break;
         }
     }
-    
+
     void eeprom_write_specific_accel_parameters(char axis)
     {
         function_log();
@@ -619,23 +520,19 @@ public:
         {
         case 'x':
             x_acceleration = value;
-            // Serial.println("New X accel: " + String(x_acceleration));
             break;
         case 'y':
             y_acceleration = value;
-            // Serial.println("New Y accel: " + String(y_acceleration));
             break;
         case 'z':
             z_acceleration = value;
-            // Serial.println("New Z accel: " + String(z_acceleration));
             break;
         case 'w':
             w_acceleration = value;
-            // Serial.println("New W accel: " + String(w_acceleration));
             break;
         }
     }
-    
+
     void eeprom_write_specific_offset_parameters(char axis)
     {
         function_log();
@@ -662,23 +559,19 @@ public:
         {
         case 'x':
             x_offset = value;
-            // Serial.println("New X offset: " + String(x_offset));
             break;
         case 'y':
             y_offset = value;
-            // Serial.println("New Y offset: " + String(y_offset));
             break;
         case 'z':
             z_offset = value;
-            // Serial.println("New Z offset: " + String(z_offset));
             break;
         case 'w':
             w_offset = value;
-            // Serial.println("New W offset: " + String(w_offset));
             break;
         }
     }
-    
+
     void eeprom_write_specific_plus_parameters(char axis)
     {
         function_log();
@@ -705,23 +598,17 @@ public:
         {
         case 'x':
             x_plus = value;
-            // Serial.println("New X plus: " + String(x_plus));
             break;
         case 'y':
             y_plus = value;
-            // Serial.println("New Y plus: " + String(y_plus));
             break;
         case 'z':
             z_plus = value;
-            // Serial.println("New Z plus: " + String(z_plus));
             break;
         case 'w':
             w_plus = value;
-            // Serial.println("New W plus: " + String(w_plus));
             break;
         }
     }
-    
 };
-
 #endif

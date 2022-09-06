@@ -8,13 +8,9 @@ struct identity_parameters_def
 {
 private:
     int Storage_addr;
-
     int eeprom_building_name_addr = 0;
     int eeprom_device_id_addr = 0;
     int eeprom_device_name_addr = 0;
-
-    int eeprom_tableled_flag_addr = 0;
-    int eeprom_frameled_flag_addr = 0;
 
     eeprom_extension eeprom;
 
@@ -75,35 +71,6 @@ private:
         EEPROM.end();
     }
 
-    void eeprom_put_tableled_flag_status()
-    {
-        function_log();
-        EEPROM.begin();
-        eeprom.eeprom_put(table_led_flag, eeprom_tableled_flag_addr);
-        EEPROM.end();
-    }
-    void eeprom_get_tableled_flag_status()
-    {
-        function_log();
-        EEPROM.begin();
-        table_led_flag = eeprom.eeprom_get(table_led_flag, eeprom_tableled_flag_addr);
-        EEPROM.end();
-    }
-    void eeprom_put_frameled_flag_status()
-    {
-        function_log();
-        EEPROM.begin();
-        eeprom.eeprom_put(frame_led_flag, eeprom_frameled_flag_addr);
-        EEPROM.end();
-    }
-    void eeprom_get_frameled_flag_status()
-    {
-        function_log();
-        EEPROM.begin();
-        frame_led_flag = eeprom.eeprom_get(frame_led_flag, eeprom_frameled_flag_addr);
-        EEPROM.end();
-    }
-
 public:
     char building_name[15] = "Building L";
     int device_id;
@@ -111,7 +78,6 @@ public:
 
     bool table_led_flag = false;
     bool frame_led_flag = false;
-
     identity_parameters_def(int storage_addr)
     {
         identity_parameters_intit(storage_addr);
@@ -126,8 +92,6 @@ public:
         eeprom_building_name_addr = Storage_addr;
         eeprom_device_id_addr = eeprom_building_name_addr + sizeof(building_name);
         eeprom_device_name_addr = eeprom_device_id_addr + sizeof(device_id);
-        eeprom_tableled_flag_addr = eeprom_device_name_addr + sizeof(device_name);
-        eeprom_frameled_flag_addr = eeprom_tableled_flag_addr + sizeof(table_led_flag);
     }
     void eeprom_read_identity_parameters()
     {
@@ -135,13 +99,9 @@ public:
         eeprom_read_building_name(eeprom_building_name_addr);
         eeprom_read_device_id(eeprom_device_id_addr);
         eeprom_read_device_name(eeprom_device_name_addr);
-        eeprom_get_frameled_flag_status();
-        eeprom_get_tableled_flag_status();
         Serial.println("Building Name: " + String(building_name));
         Serial.println("Device ID: " + String(device_id));
         Serial.println("Device Name: " + String(device_name));
-        Serial.println(frame_led_flag ? "Get frame_led_flag: true" : "Get frame_led_flag: false");
-        Serial.println(table_led_flag ? "Get table_led_flag: true" : "Get table_led_flag: false");
     }
 
     void eeprom_save_building_name()
@@ -159,20 +119,8 @@ public:
         function_log();
         eeprom_save_device_name(eeprom_device_name_addr);
     }
-    void eeprom_put_table_led_flag_status()
-    {
-        function_log();
-        eeprom_put_tableled_flag_status();
-        Serial.println(table_led_flag ? "Put table_led_flag: true" : "Put table_led_flag: false");
-    }
-    void eeprom_put_frame_led_flag_status()
-    {
-        function_log();
-        eeprom_put_frameled_flag_status();
-        Serial.println(frame_led_flag ? "Put frame_led_flag: true" : "Put frame_led_flag: false");
-    }
 
-    void setup_building_name(char *BuildingName)
+    void setup_building_name(const char *BuildingName)
     {
         function_log();
         memccpy(building_name, BuildingName, 0, sizeof(building_name));
@@ -184,18 +132,18 @@ public:
         device_id = DeviceID;
         Serial.println("New Device ID: " + String(device_id));
     }
-    void setup_device_name(char *DeviceName)
+    void setup_device_name(const char *DeviceName)
     {
         function_log();
         memccpy(device_name, DeviceName, 0, sizeof(device_name));
         Serial.println("New Device Name: " + String(device_name));
     }
-    void setup_table_led_flag_status(bool value)
+    void set_table_led_flag_status(bool value)
     {
         function_log();
         table_led_flag = value;
     }
-    void setup_frame_led_flag_status(bool value)
+    void set_frame_led_flag_status(bool value)
     {
         function_log();
         frame_led_flag = value;
